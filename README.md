@@ -1,124 +1,162 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS Foundation
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+**Production-ready NestJS boilerplate**
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A minimal, opinionated starting point for building NestJS backends intended to run in production.
 
-## Description
+## Principles
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Production-first
+Everything here is designed to run in production environments. No experimental features, no half-baked integrations. Every dependency and configuration choice has been battle-tested.
 
-## Features
+### Minimal surface area
+Only essential setup is included. No bloat, no kitchen sink. You get structured logging, type-safe validation, API documentation, and quality tooling—nothing more, nothing less.
 
-- [x] EditorConfig for consistent coding style
-- [x] Biome for fast linting and formatting
-- [x] Husky for git hooks
-- [x] Lint-staged for pre-commit checks
-- [x] Commitlint for conventional commits
-- [x] **[Zod validation](docs/zod-validation.md)** with nestjs-zod for type-safe validation
-- [x] Swagger/OpenAPI documentation
-- [x] Pino logger for structured logging
+### Explicit over implicit
+Configuration and behavior are visible and easy to reason about. No magic, no hidden abstractions. If something happens, you know where and why.
 
-## Project setup
+### Long-term maintainability
+The project should still make sense after months or years. Clear patterns, consistent conventions, and well-documented decisions ensure the codebase remains approachable.
 
-```bash
-$ pnpm install
-```
+---
 
-## Compile and run the project
+## What's Included
 
-```bash
-# development
-$ pnpm run start
+- [x] **[Zod validation](docs/zod-validation.md)** with [`nestjs-zod`](https://github.com/risenforces/nestjs-zod) for type-safe request validation
+- [x] **Pino logger** for structured, production-grade logging
+- [x] **Swagger/OpenAPI** documentation auto-generated from your code
+- [x] **TypeORM** setup ready for PostgreSQL integration
+- [x] **Biome** for fast, consistent linting and formatting
+- [x] **Git hooks** via Husky for automated quality checks
+- [x] **Commitlint** for conventional commit messages
+- [x] **Lint-staged** for efficient pre-commit validation
+- [x] **EditorConfig** for consistent coding style across editors
+- [x] **pnpm** for fast, disk-efficient package management
 
-# watch mode
-$ pnpm run start:dev
+---
 
-# production mode
-$ pnpm run start:prod
-```
+## Getting Started
 
-## Run tests
+### Prerequisites
+
+- Node.js 24+ 
+- pnpm 10+
+- PostgreSQL (optional, for database features)
+
+### Installation
 
 ```bash
-# unit tests
-$ pnpm run test
+# Clone the repository
+git clone <your-repo-url>
+cd nestjs-foundation
 
-# e2e tests
-$ pnpm run test:e2e
+# Install dependencies
+pnpm install
 
-# test coverage
-$ pnpm run test:cov
+# Setup environment variables
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
-## API Documentation
+### Environment Setup
 
-Once the application is running, visit http://localhost:3000/docs to see the Swagger/OpenAPI documentation.
+Create a [`.env`](.env.example) file in the root directory:
 
-## Commit Message Format
+```bash
+# Application
+NODE_ENV=development
+PORT=3000
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages. Commitlint will automatically validate your commit messages.
+# Database (if using TypeORM)
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=nestjs_foundation
 
-See [docs/conventional-commits.md](docs/conventional-commits.md) for detailed information.
+# Logging
+LOG_LEVEL=info
+```
+
+### Running the Application
+
+```bash
+# Development mode with watch
+pnpm dev
+
+# Production build and run
+pnpm build
+pnpm start:prod
+```
+
+The application will be available at:
+- API: `http://localhost:3000`
+- Swagger docs: `http://localhost:3000/docs`
+
+---
+
+## Development
+
+### Code Quality
+
+```bash
+# Lint and format code (applies fixes automatically)
+pnpm lint
+```
+
+### Testing
+
+```bash
+# Unit tests
+pnpm test
+
+# E2E tests
+pnpm test:e2e
+```
+
+### API Documentation
+
+Once running, visit [`http://localhost:3000/docs`](http://localhost:3000/docs) to explore the auto-generated Swagger/OpenAPI documentation.
+
+---
 
 ## Documentation
 
-- [Zod Validation Guide](docs/zod-validation.md) - Complete guide to using Zod
-- [Conventional Commits](docs/conventional-commits.md) - Commit message format
+- **[Zod Validation Guide](docs/zod-validation.md)** - Complete guide to type-safe validation with Zod
+- **[Conventional Commits](docs/conventional-commits.md)** - Commit message format and standards
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Commit Standards
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+This project enforces [Conventional Commits](https://www.conventionalcommits.org/) for clear, structured commit history:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# format: <type>(<scope>): <subject>
+
+feat(auth): add JWT token refresh
+fix(users): resolve email validation bug
+docs(readme): update installation steps
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Commitlint validates all commit messages automatically via Git hooks.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Project Structure
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+src/
+├── config/          # Configuration modules (app, database, etc.)
+├── schemas/         # Zod schemas for validation
+└── main.ts          # Application entry point
 
-## Support
+docs/                # Documentation files
+test/                # E2E tests
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+[MIT licensed](LICENSE).
