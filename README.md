@@ -29,6 +29,9 @@
 
 - [x] EditorConfig for consistent coding style
 - [x] Biome for fast linting and formatting
+- [x] Husky for git hooks
+- [x] Lint-staged for pre-commit checks
+- [x] Commitlint for conventional commits
 
 ## Project setup
 
@@ -61,6 +64,12 @@ $ pnpm run test:e2e
 # test coverage
 $ pnpm run test:cov
 ```
+
+## Commit Message Format
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages. Commitlint will automatically validate your commit messages.
+
+See [docs/conventional-commits.md](docs/conventional-commits.md) for detailed information.
 
 ## Deployment
 
