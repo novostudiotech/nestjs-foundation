@@ -25,6 +25,10 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Features
+
+- [x] EditorConfig for consistent coding style
+
 ## Project setup
 
 ```bash
