@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import type { AppService } from './app.service';
+import { AppService } from './app.service';
 
 // Simple Zod schema for user creation
 const CreateUserSchema = z.object({

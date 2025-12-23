@@ -25,6 +25,8 @@ The project should still make sense after months or years. Clear patterns, consi
 - [x] **[Zod validation](docs/zod-validation.md)** with [`nestjs-zod`](https://github.com/risenforces/nestjs-zod) for type-safe request validation
 - [x] **Pino logger** for structured, production-grade logging
 - [x] **Swagger/OpenAPI** documentation auto-generated from your code
+- [x] **Health checks** with `@nestjs/terminus` for monitoring application status
+- [x] **Prometheus metrics** for observability and monitoring
 - [x] **TypeORM** setup ready for PostgreSQL integration
 - [x] **Biome** for fast, consistent linting and formatting
 - [x] **Git hooks** via Husky for automated quality checks
@@ -92,6 +94,8 @@ pnpm start:prod
 The application will be available at:
 - API: `http://localhost:3000`
 - Swagger docs: `http://localhost:3000/docs`
+- Health check: `http://localhost:3000/health`
+- Metrics: `http://localhost:3000/metrics`
 
 ---
 
@@ -124,6 +128,7 @@ Once running, visit [`http://localhost:3000/docs`](http://localhost:3000/docs) t
 
 - **[Zod Validation Guide](docs/zod-validation.md)** - Complete guide to type-safe validation with Zod
 - **[Conventional Commits](docs/conventional-commits.md)** - Commit message format and standards
+- **[Monitoring & Health Checks](docs/monitoring.md)** - Health checks and Prometheus metrics setup
 
 ---
 
@@ -148,6 +153,7 @@ Commitlint validates all commit messages automatically via Git hooks.
 ```
 src/
 ├── config/          # Configuration modules (app, database, etc.)
+├── health/          # Health check module
 ├── schemas/         # Zod schemas for validation
 └── main.ts          # Application entry point
 

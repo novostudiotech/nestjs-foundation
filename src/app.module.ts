@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { AppService } from './app.service';
         },
       },
     }),
+    PrometheusModule.register(),
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
