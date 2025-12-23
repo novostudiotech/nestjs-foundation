@@ -28,6 +28,7 @@
 ## Features
 
 - [x] EditorConfig for consistent coding style
+- [x] Biome for fast linting and formatting
 
 ## Project setup
 
