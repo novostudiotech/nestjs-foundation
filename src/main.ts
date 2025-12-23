@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-import { createValidationPipe } from './common/pipes/validation.pipe';
 import { appConfig } from './config';
 
 async function bootstrap() {
@@ -21,9 +20,6 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
-
-  // Setup global validation with detailed error messages
-  app.useGlobalPipes(createValidationPipe());
 
   // Setup Swagger
   const config = new DocumentBuilder()

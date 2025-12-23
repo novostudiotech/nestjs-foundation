@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
+import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -39,6 +41,12 @@ import { AppService } from './app.service';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
+  ],
 })
 export class AppModule {}

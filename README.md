@@ -32,6 +32,9 @@
 - [x] Husky for git hooks
 - [x] Lint-staged for pre-commit checks
 - [x] Commitlint for conventional commits
+- [x] **[Zod validation](docs/zod-validation.md)** with nestjs-zod for type-safe validation
+- [x] Swagger/OpenAPI documentation
+- [x] Pino logger for structured logging
 
 ## Project setup
 
@@ -65,11 +68,20 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+## API Documentation
+
+Once the application is running, visit http://localhost:3000/docs to see the Swagger/OpenAPI documentation.
+
 ## Commit Message Format
 
 This project uses [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages. Commitlint will automatically validate your commit messages.
 
 See [docs/conventional-commits.md](docs/conventional-commits.md) for detailed information.
+
+## Documentation
+
+- [Zod Validation Guide](docs/zod-validation.md) - Complete guide to using Zod
+- [Conventional Commits](docs/conventional-commits.md) - Commit message format
 
 ## Deployment
 
