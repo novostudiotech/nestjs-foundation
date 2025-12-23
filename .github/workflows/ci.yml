@@ -2,40 +2,20 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main, develop]
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run linter
-        run: pnpm run lint
-
-      - name: Check formatting
-        run: pnpm run format -- --check
-
-      - name: Build project
-        run: pnpm run build
-
-      - name: Run unit tests
-        run: pnpm run test
+  api:
+    uses: ./.github/workflows/_docker-build.yml
+    with:
+      image: ghcr.io/${{ github.repository_owner }}/nestjs-foundation
+      target: api
+      push: false
+      build-args: |
+        "appName=nestjs-foundation"
+        "nodeVersion=20.17.0"
+    secrets: inherit
