@@ -33,7 +33,7 @@ import { HealthModule } from './health/health.module';
           configService.get('LOG_LEVEL') || (nodeEnv === 'production' ? 'info' : 'debug');
 
         type PinoHttpRequest = IncomingMessage & {
-          id?: string;
+          id?: string | number | object;
           route?: { path?: string };
           url: string;
           method: string;
@@ -41,7 +41,7 @@ import { HealthModule } from './health/health.module';
           _startAt?: bigint;
         };
 
-        type PinoHttpResponse = ServerResponse<PinoHttpRequest> & {
+        type PinoHttpResponse = ServerResponse<IncomingMessage> & {
           req?: PinoHttpRequest;
           _startAt?: bigint;
         };
@@ -58,15 +58,21 @@ import { HealthModule } from './health/health.module';
           return typeof value === 'number' ? value : undefined;
         };
 
-        const assignCorrelationId = (req: PinoHttpRequest, res: PinoHttpResponse) => {
-          const headerId = req.headers['x-request-id'] ?? req.headers['x-correlation-id'];
+        const assignCorrelationId = (
+          req: IncomingMessage,
+          res: ServerResponse<IncomingMessage>
+        ) => {
+          const request = req as PinoHttpRequest;
+          const response = res as PinoHttpResponse;
+
+          const headerId = request.headers['x-request-id'] ?? request.headers['x-correlation-id'];
           const correlationId = (Array.isArray(headerId) ? headerId[0] : headerId) || randomUUID();
 
           const startAt = process.hrtime.bigint();
-          req._startAt = startAt;
-          res._startAt = startAt;
-          res.setHeader('x-request-id', correlationId);
-          res.setHeader('x-correlation-id', correlationId);
+          request._startAt = startAt;
+          response._startAt = startAt;
+          response.setHeader('x-request-id', correlationId);
+          response.setHeader('x-correlation-id', correlationId);
 
           return correlationId;
         };
@@ -152,15 +158,6 @@ import { HealthModule } from './health/health.module';
               `request completed ${req.method} ${req.url} ${res.statusCode}`,
             customErrorMessage: (req, res, error) =>
               `request errored ${req.method} ${req.url} ${res?.statusCode ?? ''} ${error?.message}`,
-            hooks: {
-              onResponse: (req: PinoHttpRequest, res: PinoHttpResponse, next) => {
-                if (!res.getHeader?.('x-correlation-id') && req.id) {
-                  res.setHeader('x-correlation-id', req.id);
-                  res.setHeader('x-request-id', req.id);
-                }
-                next();
-              },
-            },
           },
         };
       },
