@@ -28,6 +28,7 @@ The project should still make sense after months or years. Clear patterns, consi
 - [x] **Health checks** with `@nestjs/terminus` for monitoring application status
 - [x] **Prometheus metrics** for observability and monitoring
 - [x] **TypeORM** setup ready for PostgreSQL integration
+- [x] **[Playwright E2E tests](docs/playwright-tests.md)** for API testing with auto-server management
 - [x] **Biome** for fast, consistent linting and formatting
 - [x] **Git hooks** via Husky for automated quality checks
 - [x] **Commitlint** for conventional commit messages
@@ -114,8 +115,14 @@ pnpm lint
 # Unit tests
 pnpm test
 
-# E2E tests
+# E2E tests with Playwright (automatically starts/stops server)
 pnpm test:e2e
+
+# E2E tests with UI mode
+pnpm test:e2e:ui
+
+# View Playwright test report
+pnpm test:e2e:report
 ```
 
 ### API Documentation
@@ -127,6 +134,7 @@ Once running, visit [`http://localhost:3000/docs`](http://localhost:3000/docs) t
 ## Documentation
 
 - **[Zod Validation Guide](docs/zod-validation.md)** - Complete guide to type-safe validation with Zod
+- **[Playwright E2E Tests](docs/playwright-tests.md)** - End-to-end API testing with Playwright
 - **[Conventional Commits](docs/conventional-commits.md)** - Commit message format and standards
 - **[Monitoring & Health Checks](docs/monitoring.md)** - Health checks and Prometheus metrics setup
 
@@ -157,8 +165,9 @@ src/
 ├── schemas/         # Zod schemas for validation
 └── main.ts          # Application entry point
 
+e2e/                 # Playwright E2E tests
 docs/                # Documentation files
-test/                # E2E tests
+test/                # Jest E2E tests
 ```
 
 ---
