@@ -7,7 +7,6 @@ import {
   HealthIndicatorFunction,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
-import { HealthCheckDto } from './dto/health.dto';
 
 @ApiTags('health')
 @Controller('health')
@@ -19,13 +18,8 @@ export class HealthController {
   ) {}
 
   @Get()
-  @HealthCheck()
+  @HealthCheck({ swaggerDocumentation: true })
   @ApiOperation({ summary: 'Health check endpoint' })
-  @ApiResponse({
-    status: 200,
-    description: 'Application is healthy',
-    type: HealthCheckDto,
-  })
   @ApiResponse({
     status: 503,
     description: 'Application is unhealthy',
@@ -50,7 +44,6 @@ export class HealthController {
         info: { service: { status: 'up' } },
         error: {},
         details: { service: { status: 'up' } },
-        timestamp: new Date().toISOString(),
       };
     }
 

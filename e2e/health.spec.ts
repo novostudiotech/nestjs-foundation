@@ -1,12 +1,11 @@
 import { expect, test } from './fixtures';
 
 test.describe('Health Check', () => {
-  test('should return 200 OK for health endpoint', async ({ http }) => {
-    const { status, data: response } = await http.get('/health');
+  test('should return 200 OK for health endpoint', async ({ api }) => {
+    const { status, data: health } = await api.healthControllerCheck();
 
     expect(status).toBe(200);
-    expect(response).toBeDefined();
-    expect(response.status).toBe('ok');
-    expect(response.timestamp).toBeDefined();
+    expect(health).toBeDefined();
+    expect(health.status).toBe('ok');
   });
 });
