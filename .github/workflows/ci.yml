@@ -65,6 +65,32 @@ jobs:
       - name: Security audit (fails on high/critical)
         run: pnpm audit --audit-level=high
 
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency review
+        id: dependency_review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          fail-on-malicious-packages: true
+          deny-licenses: AGPL-1.0,AGPL-3.0,GPL-1.0,GPL-2.0,GPL-3.0,LGPL-2.1,LGPL-3.0
+
+      - name: Summarize dependency review
+        if: always()
+        run: |
+          echo "Dependency review outcome: ${{ steps.dependency_review.outcome }}" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Blocks: vulnerabilities rated high or above, malicious packages, and denied licenses (AGPL/GPL/LGPL)." | tee -a "$GITHUB_STEP_SUMMARY"
+
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-24.04
@@ -164,3 +190,39 @@ jobs:
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
+
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run gitleaks
+        id: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          report-format: sarif
+          report-path: gitleaks.sarif
+          redact: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Summarize secret scan
+        if: always()
+        run: |
+          if [ -f gitleaks.sarif ]; then
+            findings=$(jq '.runs[0].results | length' gitleaks.sarif)
+            echo "Gitleaks findings: ${findings}" | tee -a "$GITHUB_STEP_SUMMARY"
+            if [ "${findings}" != "0" ]; then
+              echo "See gitleaks.sarif for details on detected secrets." | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            echo "No gitleaks report generated." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
