@@ -7,7 +7,7 @@ import { appConfig } from './config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    bufferLogs: true,
+    bufferLogs: true, // Wait until a custom logger is attached
   });
 
   const logger = app.get(Logger);
@@ -33,6 +33,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') ?? appConfig.port;
+
   await app.listen(port);
 
   logger.log(`Application is running on: http://localhost:${port}`);

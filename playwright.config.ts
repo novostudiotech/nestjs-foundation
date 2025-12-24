@@ -7,6 +7,13 @@ config({ path: '.env.test' });
 const PORT = process.env.PORT || 13000;
 const baseURL = `http://localhost:${PORT}`;
 
+// We use TEST_DATABASE_URL here to make sure we don't accidentally run tests against production or local database defined in .env file. So we set TEST_DATABASE_URL explicitly.
+const DATABASE_URL = process.env.TEST_DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error('TEST_DATABASE_URL is not set');
+}
+
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
@@ -35,6 +42,7 @@ export default defineConfig({
     env: {
       NODE_ENV: 'test',
       PORT: PORT.toString(),
+      DATABASE_URL,
     },
   },
 });
