@@ -76,6 +76,25 @@ jobs:
     timeout-minutes: 15
     needs: build
 
+    env:
+      NODE_ENV: test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:54320/nestjs_foundation_test
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nestjs_foundation_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 54320:5432
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -94,13 +113,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
+      - name: Build application
+        run: pnpm build
 
       - name: Run E2E tests
         run: pnpm test:e2e
         env:
           CI: true
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:54320/nestjs_foundation_test
 
   docker-build:
     name: Docker Build
