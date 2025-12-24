@@ -7,6 +7,7 @@ import {
   HealthIndicatorFunction,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { PublicAuth } from '../decorators/public-auth.decorator';
 
 @ApiTags('health')
 @Controller('health')
@@ -18,6 +19,7 @@ export class HealthController {
   ) {}
 
   @Get()
+  @PublicAuth()
   @HealthCheck({ swaggerDocumentation: true })
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({
