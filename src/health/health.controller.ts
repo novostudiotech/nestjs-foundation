@@ -50,9 +50,14 @@ export class HealthController {
         info: { service: { status: 'up' } },
         error: {},
         details: { service: { status: 'up' } },
+        timestamp: new Date().toISOString(),
       };
     }
 
-    return this.health.check(healthChecks);
+    const healthResult = await this.health.check(healthChecks);
+    return {
+      ...healthResult,
+      timestamp: new Date().toISOString(),
+    };
   }
 }

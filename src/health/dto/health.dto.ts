@@ -32,4 +32,10 @@ export class HealthCheckDto {
     description: 'Combined details of all indicators',
   })
   details: Record<string, HealthIndicatorResult>;
+
+  @ApiProperty({
+    description: 'Timestamp of the health check',
+    example: '2024-01-01T00:00:00.000Z',
+  })
+  timestamp: string;
 }
