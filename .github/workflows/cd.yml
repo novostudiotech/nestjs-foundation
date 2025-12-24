@@ -1,0 +1,39 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  api:
+    uses: ./.github/workflows/_docker-build.yml
+    with:
+      image: ghcr.io/${{ github.repository_owner }}/nestjs-foundation
+      target: api
+      push: true
+    secrets: inherit
+
+  deploy:
+    if: false
+    name: Deploy to Digital Ocean
+    needs: api
+    runs-on: ubuntu-24.04
+    env:
+      DIGITALOCEAN_APP_ID: 00000000-0000-0000-0000-000000000000
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Trigger deployment
+        run: |
+          echo "🚀 Triggering deployment for app: $DIGITALOCEAN_APP_ID"
+          doctl apps create-deployment $DIGITALOCEAN_APP_ID --force-rebuild --wait
+          echo "✅ Deployment completed successfully"
+          echo "### 🚀 Deployment Details" >> $GITHUB_STEP_SUMMARY
+          echo "View deployment status: [Digital Ocean Deployments](https://cloud.digitalocean.com/apps/$DIGITALOCEAN_APP_ID/deployments)" >> $GITHUB_STEP_SUMMARY

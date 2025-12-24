@@ -15,7 +15,4 @@ jobs:
       image: ghcr.io/${{ github.repository_owner }}/nestjs-foundation
       target: api
       push: false
-      build-args: |
-        "appName=nestjs-foundation"
-        "nodeVersion=20.17.0"
     secrets: inherit
