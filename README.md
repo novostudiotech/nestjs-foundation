@@ -61,26 +61,6 @@ cp .env.example .env
 # Edit .env with your configuration
 ```
 
-### Environment Setup
-
-Create a [`.env`](.env.example) file in the root directory:
-
-```bash
-# Application
-NODE_ENV=development
-PORT=3000
-
-# Database (if using TypeORM)
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=postgres
-DATABASE_NAME=nestjs_foundation
-
-# Logging
-LOG_LEVEL=info
-```
-
 ### Running the Application
 
 ```bash
@@ -97,37 +77,6 @@ The application will be available at:
 - Swagger docs: `http://localhost:3000/docs`
 - Health check: `http://localhost:3000/health`
 - Metrics: `http://localhost:3000/metrics`
-
----
-
-## Development
-
-### Code Quality
-
-```bash
-# Lint and format code (applies fixes automatically)
-pnpm lint
-```
-
-### Testing
-
-```bash
-# Unit tests
-pnpm test
-
-# E2E tests with Playwright (automatically starts/stops server)
-pnpm test:e2e
-
-# E2E tests with UI mode
-pnpm test:e2e:ui
-
-# View Playwright test report
-pnpm test:e2e:report
-```
-
-### API Documentation
-
-Once running, visit [`http://localhost:3000/docs`](http://localhost:3000/docs) to explore the auto-generated Swagger/OpenAPI documentation.
 
 ---
 
@@ -153,22 +102,6 @@ docs(readme): update installation steps
 ```
 
 Commitlint validates all commit messages automatically via Git hooks.
-
----
-
-## Project Structure
-
-```
-src/
-├── config/          # Configuration modules (app, database, etc.)
-├── health/          # Health check module
-├── schemas/         # Zod schemas for validation
-└── main.ts          # Application entry point
-
-e2e/                 # Playwright E2E tests
-docs/                # Documentation files
-test/                # Jest E2E tests
-```
 
 ---
 
