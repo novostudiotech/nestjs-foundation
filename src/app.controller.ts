@@ -4,6 +4,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { ValidationErrorDto } from './app/dto/validation-error.dto';
 import { AppService } from './app.service';
+import { PublicAuth } from './decorators/public-auth.decorator';
 
 // Simple Zod schema for user creation
 const CreateUserSchema = z.object({
@@ -21,6 +22,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
+  @PublicAuth()
   @ApiOperation({ summary: 'Get hello message' })
   @ApiResponse({ status: 200, description: 'Returns a hello message' })
   getHello(): string {
@@ -28,6 +30,7 @@ export class AppController {
   }
 
   @Post('users')
+  @PublicAuth()
   @ApiOperation({ summary: 'Create a new user (Zod validation example)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({

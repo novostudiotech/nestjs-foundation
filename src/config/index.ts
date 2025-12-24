@@ -11,7 +11,7 @@ const envValidationSchema = z.object({
   // App config
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().optional(),
-  CORS_ORIGIN: z.string().url().optional(),
+  CORS_ORIGIN: z.url().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
 
   // Database config
@@ -19,6 +19,11 @@ const envValidationSchema = z.object({
 
   // Test database (optional, only required for E2E tests)
   TEST_DATABASE_URL: z.string().url().optional(),
+
+  // Auth config
+  AUTH_SECRET: z.string().min(32),
+  AUTH_BASE_URL: z.url(),
+  AUTH_BASE_PATH: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envValidationSchema>;
