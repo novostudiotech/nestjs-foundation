@@ -1,11 +1,6 @@
 import { DataSourceOptions } from 'typeorm';
-import { z } from 'zod';
 
-const databaseConfigSchema = z.object({
-  databaseUrl: z.url(),
-});
-
-export type DatabaseConfig = z.infer<typeof databaseConfigSchema>;
+// databaseConfig is validated via ConfigModule.forRoot validate function
 
 export function getDatabaseConfig(databaseUrl: string): DataSourceOptions {
   const requiresSsl = databaseUrl.includes('sslmode=require');
@@ -25,6 +20,3 @@ export function getDatabaseConfig(databaseUrl: string): DataSourceOptions {
     ssl: requiresSsl ? { rejectUnauthorized: true } : false,
   };
 }
-export const databaseConfig = databaseConfigSchema.parse({
-  databaseUrl: process.env.DATABASE_URL,
-});

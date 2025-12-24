@@ -8,6 +8,7 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EnvConfig, validateEnv } from './config';
 import { getDatabaseConfig } from './config/database.config';
 import { HealthModule } from './health/health.module';
 
@@ -16,40 +17,78 @@ import { HealthModule } from './health/health.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
-    }),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        transport:
-          process.env.NODE_ENV !== 'production'
-            ? {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  singleLine: true,
-                  translateTime: 'SYS:standard',
-                  ignore: 'pid,hostname',
-                },
-              }
-            : undefined,
-        serializers: {
-          req: (req) => ({
-            id: req.id,
-            method: req.method,
-            url: req.url,
-          }),
-          res: (res) => ({
-            statusCode: res.statusCode,
-          }),
-        },
+      validate: validateEnv,
+      validationOptions: {
+        allowUnknown: false,
+        abortEarly: false,
       },
+    }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService<EnvConfig>) => {
+        const nodeEnv = configService.get('NODE_ENV');
+        const logLevel =
+          configService.get('LOG_LEVEL') || (nodeEnv === 'production' ? 'info' : 'debug');
+
+        return {
+          pinoHttp: {
+            level: logLevel,
+            transport:
+              nodeEnv !== 'production'
+                ? {
+                    target: 'pino-pretty',
+                    options: {
+                      colorize: true,
+                      singleLine: true,
+                      translateTime: 'SYS:standard',
+                      ignore: 'pid,hostname',
+                    },
+                  }
+                : undefined,
+            serializers: {
+              req: (req) => ({
+                id: req.id,
+                method: req.method,
+                url: req.url,
+                headers: {
+                  // Redact sensitive headers
+                  authorization: req.headers.authorization ? '[REDACTED]' : undefined,
+                  cookie: req.headers.cookie ? '[REDACTED]' : undefined,
+                  'x-api-key': req.headers['x-api-key'] ? '[REDACTED]' : undefined,
+                },
+              }),
+              res: (res) => ({
+                statusCode: res.statusCode,
+              }),
+            },
+            redact: {
+              paths: [
+                'req.headers.authorization',
+                'req.headers.cookie',
+                'req.headers["x-api-key"]',
+                'req.headers["X-API-Key"]',
+                'req.body.password',
+                'req.body.token',
+                'req.body.secret',
+                'res.headers["set-cookie"]',
+              ],
+              remove: true,
+            },
+            // Limit body size to prevent logging large payloads
+            customProps: () => ({
+              environment: nodeEnv,
+            }),
+          },
+        };
+      },
+      inject: [ConfigService],
     }),
     PrometheusModule.register(),
     HealthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get('DATABASE_URL') || '';
+      useFactory: (configService: ConfigService<EnvConfig>) => {
+        const databaseUrl = configService.get('DATABASE_URL');
         const config = getDatabaseConfig(databaseUrl);
 
         return {

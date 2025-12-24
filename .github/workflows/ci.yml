@@ -37,17 +37,12 @@ jobs:
         run: pnpm exec tsc --noEmit
 
       - name: Lint code
-        run: pnpm lint
+        run: pnpm lint:ci
 
-      - name: Security audit
-        run: pnpm audit --audit-level=moderate
-        continue-on-error: true
-
-  build:
-    name: Build
+  security-audit:
+    name: Security Audit
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    needs: quality-checks
 
     steps:
       - name: Checkout code
@@ -67,14 +62,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build application
-        run: pnpm build
+      - name: Security audit (fails on high/critical)
+        run: pnpm audit --audit-level=high
 
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    needs: build
 
     env:
       NODE_ENV: test
@@ -97,7 +91,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -124,7 +118,6 @@ jobs:
 
   docker-build:
     name: Docker Build
-    needs: build
     uses: ./.github/workflows/_docker-build.yml
     with:
       image: ghcr.io/${{ github.repository_owner }}/nestjs-foundation

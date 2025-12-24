@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { ValidationErrorDto } from './app/dto/validation-error.dto';
 import { AppService } from './app.service';
 
 // Simple Zod schema for user creation
@@ -29,7 +30,11 @@ export class AppController {
   @Post('users')
   @ApiOperation({ summary: 'Create a new user (Zod validation example)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
-  @ApiResponse({ status: 400, description: 'Validation failed' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed',
+    type: ValidationErrorDto,
+  })
   createUser(@Body() createUserDto: CreateUserDto) {
     return {
       message: 'User created successfully',
