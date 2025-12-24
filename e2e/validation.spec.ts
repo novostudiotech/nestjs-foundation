@@ -1,11 +1,12 @@
 import { expect, test } from './fixtures';
 
 test.describe('API Validation', () => {
-  test('should return 400 for invalid email in user creation', async ({ http }) => {
-    const { status, data } = await http.post('/users', {
+  test('should return 400 for invalid email in user creation', async ({ api }) => {
+    const response = await api.appControllerCreateUser({
       email: 'invalid-email',
       name: 'Test User',
     });
+    const { status, data } = response as { status: number; data: any };
 
     expect(status).toBe(400);
     expect(data).toBeDefined();
@@ -21,11 +22,12 @@ test.describe('API Validation', () => {
     expect(data.errors[0]).toHaveProperty('message');
   });
 
-  test('should return 400 for missing required fields', async ({ http }) => {
-    const { status, data } = await http.post('/users', {
+  test('should return 400 for missing required fields', async ({ api }) => {
+    const response = await api.appControllerCreateUser({
       email: 'test@example.com',
       // name is required but missing
-    });
+    } as any);
+    const { status, data } = response as { status: number; data: any };
 
     expect(status).toBe(400);
     expect(data).toBeDefined();
@@ -38,12 +40,13 @@ test.describe('API Validation', () => {
     expect(nameError).toBeDefined();
   });
 
-  test('should return 400 for invalid age (below minimum)', async ({ http }) => {
-    const { status, data } = await http.post('/users', {
+  test('should return 400 for invalid age (below minimum)', async ({ api }) => {
+    const response = await api.appControllerCreateUser({
       email: 'test@example.com',
       name: 'Test User',
       age: 17, // Below minimum of 18
     });
+    const { status, data } = response as { status: number; data: any };
 
     expect(status).toBe(400);
     expect(data).toBeDefined();
@@ -56,12 +59,13 @@ test.describe('API Validation', () => {
     expect(ageError).toBeDefined();
   });
 
-  test('should return 201 for valid user creation', async ({ http }) => {
-    const { status, data } = await http.post('/users', {
+  test('should return 201 for valid user creation', async ({ api }) => {
+    const response = await api.appControllerCreateUser({
       email: 'test@example.com',
       name: 'Test User',
       age: 25,
     });
+    const { status, data } = response as { status: number; data: any };
 
     expect(status).toBe(201);
     expect(data).toBeDefined();
