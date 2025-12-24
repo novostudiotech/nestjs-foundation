@@ -10,6 +10,7 @@
     "build": "nest build",
     "start": "NODE_OPTIONS='-r dotenv/config' nest start",
     "lint": "biome check --write .",
+    "lint:ci": "biome ci --no-errors-on-unmatched --reporter=github .",
     "debug": "NODE_OPTIONS='-r dotenv/config' nest start --watch --debug",
     "start:prod": "node -r dotenv/config dist/main",
     "test:e2e": "playwright test",

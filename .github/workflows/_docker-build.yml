@@ -93,3 +93,5 @@ jobs:
           target: ${{ inputs.target }}
           build-args: ${{ inputs.build-args }}
           platforms: linux/amd64
+          provenance: true
+          sbom: true

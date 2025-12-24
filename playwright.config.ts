@@ -33,7 +33,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'NODE_ENV=test pnpm run dev',
+    // Use production build for E2E tests to test against production-like environment
+    // In CI, build step runs before E2E tests, so dist/ will exist
+    // For local development, run `pnpm build` first
+    command: process.env.CI ? `NODE_ENV=test pnpm start:prod` : `NODE_ENV=test pnpm run dev`,
     stdout: process.env.DEBUG ? 'pipe' : 'ignore',
     stderr: process.env.DEBUG ? 'pipe' : 'ignore',
     url: `${baseURL}/health`,

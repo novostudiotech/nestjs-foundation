@@ -23,6 +23,20 @@
       "recommended": true,
       "style": {
         "useImportType": "off"
+      },
+      "suspicious": {
+        "noMisleadingCharacterClass": "error"
+      },
+      "correctness": {
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "warn"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "noExcessiveCognitiveComplexity": "warn"
+      },
+      "performance": {
+        "noDelete": "warn"
       }
     }
   },
