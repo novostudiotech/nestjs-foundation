@@ -33,7 +33,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod
+RUN NODE_ENV=production pnpm install --frozen-lockfile --prod
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
