@@ -9,7 +9,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EnvConfig, validateEnv } from './config';
-import { getDatabaseConfig } from './config/database.config';
+import { getDatabaseConfig } from './config/db.config';
 import { HealthModule } from './health/health.module';
 
 @Module({
