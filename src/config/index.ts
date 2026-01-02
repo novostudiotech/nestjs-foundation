@@ -7,7 +7,7 @@ export * from './db.config';
  * Unified environment validation schema
  * Validates all required environment variables at application startup
  */
-const envValidationSchema = z.object({
+const envSchema = z.object({
   // App config
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().optional(),
@@ -18,9 +18,12 @@ const envValidationSchema = z.object({
 
   // Test database (optional, only required for E2E tests)
   TEST_DATABASE_URL: z.string().url().optional(),
+
+  // Auth config
+  AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters long'),
 });
 
-export type EnvConfig = z.infer<typeof envValidationSchema>;
+export type EnvConfig = z.infer<typeof envSchema>;
 
 /**
  * Validates environment variables using Zod schema
@@ -28,7 +31,7 @@ export type EnvConfig = z.infer<typeof envValidationSchema>;
  */
 export function validateEnv(config: Record<string, unknown>): EnvConfig {
   try {
-    return envValidationSchema.parse(config);
+    return envSchema.parse(config);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.issues

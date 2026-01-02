@@ -2,12 +2,14 @@ import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { InjectDataSource, TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { auth } from './auth/auth.config';
 import { EnvConfig, validateEnv } from './config';
 import { getDatabaseConfig } from './config/db.config';
 import { HealthModule } from './health/health.module';
@@ -118,6 +120,7 @@ import { HealthModule } from './health/health.module';
       },
       inject: [ConfigService],
     }),
+    AuthModule.forRoot({ auth }),
   ],
   controllers: [AppController],
   providers: [

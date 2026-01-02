@@ -1,2 +1,5 @@
 onlyBuiltDependencies:
   - '@nestjs/core'
+
+patchedDependencies:
+  '@thallesp/nestjs-better-auth': patches/@thallesp__nestjs-better-auth.patch

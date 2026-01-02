@@ -1,5 +1,11 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  AllowAnonymous,
+  OptionalAuth,
+  Session,
+  type UserSession,
+} from '@thallesp/nestjs-better-auth';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { ValidationErrorDto } from './app/dto/validation-error.dto';
@@ -21,10 +27,41 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get hello message' })
+  @AllowAnonymous()
+  @ApiOperation({ summary: 'Get hello message (public route)' })
   @ApiResponse({ status: 200, description: 'Returns a hello message' })
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user profile (protected route)' })
+  @ApiResponse({ status: 200, description: 'Returns current user information' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getProfile(@Session() session: UserSession) {
+    return {
+      user: session.user,
+      session: {
+        id: session.session.id,
+        expiresAt: session.session.expiresAt,
+      },
+    };
+  }
+
+  @Get('optional')
+  @OptionalAuth()
+  @ApiOperation({
+    summary: 'Get optional auth info (authentication is optional)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns authentication status and user if authenticated',
+  })
+  getOptional(@Session() session: UserSession | null) {
+    return {
+      authenticated: !!session,
+      user: session?.user ?? null,
+    };
   }
 
   @Post('users')
