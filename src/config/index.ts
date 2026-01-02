@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export * from './app.config';
-export * from './database.config';
+export * from './db.config';
 
 /**
  * Unified environment validation schema
@@ -11,7 +11,6 @@ const envValidationSchema = z.object({
   // App config
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().optional(),
-  CORS_ORIGIN: z.string().url().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
 
   // Database config
