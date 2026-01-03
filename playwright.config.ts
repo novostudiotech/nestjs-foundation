@@ -16,7 +16,7 @@ if (!DATABASE_URL) {
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: '**/*.spec.ts',
+  testMatch: 'e2e/**/*.spec.ts',
   fullyParallel: false,
   workers: 1,
   reporter: process.env.CI ? 'github' : 'list',
@@ -29,7 +29,7 @@ export default defineConfig({
   projects: [
     {
       name: 'API Tests',
-      testMatch: '**/*.spec.ts',
+      testMatch: 'e2e/**/*.spec.ts',
     },
   ],
   webServer: {

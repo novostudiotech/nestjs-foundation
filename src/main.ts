@@ -27,9 +27,16 @@ async function bootstrap() {
     .setTitle('NestJS Foundation API')
     .setDescription('NestJS Foundation API Documentation')
     .setVersion('1.0')
+    .addSecurity('apiKey', {
+      type: 'apiKey',
+      in: 'header',
+      name: 'Authorization',
+      description: 'API key for authentication',
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+  console.log(document);
   SwaggerModule.setup('docs', app, cleanupOpenApiDoc(document));
 
   const configService = app.get(ConfigService);
