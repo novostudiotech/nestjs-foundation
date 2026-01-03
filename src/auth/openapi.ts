@@ -58,6 +58,158 @@ function prefixPath(path: string, basePath: string): string {
 }
 
 /**
+ * Valid Swagger/OpenAPI types
+ */
+const VALID_SWAGGER_TYPES = ['string', 'number', 'integer', 'boolean', 'array', 'object'] as const;
+
+/**
+ * Recursively normalizes a schema object to fix Swagger validation errors
+ * Removes invalid type definitions and recursively processes nested properties
+ * Fixes issues where type is an array (e.g., ["string", "null"]) which is not valid in OpenAPI
+ */
+function normalizeSchemaRecursive(schema: unknown): unknown {
+  if (!schema || typeof schema !== 'object') {
+    return schema;
+  }
+
+  const schemaObj = schema as Record<string, unknown>;
+  const normalized: Record<string, unknown> = { ...schemaObj };
+
+  // Normalize type if it exists
+  if (normalized.type) {
+    // If type is an array (e.g., ["string", "null"]), convert it to proper OpenAPI format
+    if (Array.isArray(normalized.type)) {
+      const typeArray = normalized.type as unknown[];
+      const nonNullTypes = typeArray.filter((t) => t !== null && t !== 'null');
+      const hasNull = typeArray.includes(null) || typeArray.includes('null');
+
+      if (nonNullTypes.length === 0) {
+        // Only null, remove type
+        delete normalized.type;
+      } else if (nonNullTypes.length === 1) {
+        // Single type with optional null
+        const singleType = nonNullTypes[0];
+        if (
+          typeof singleType === 'string' &&
+          VALID_SWAGGER_TYPES.includes(singleType as (typeof VALID_SWAGGER_TYPES)[number])
+        ) {
+          normalized.type = singleType;
+          if (hasNull) {
+            normalized.nullable = true;
+          }
+        } else {
+          // Invalid type, remove it
+          delete normalized.type;
+        }
+      } else {
+        // Multiple types - use oneOf (but this is complex, so for now just use the first valid type)
+        const firstValidType = nonNullTypes.find(
+          (t) =>
+            typeof t === 'string' &&
+            VALID_SWAGGER_TYPES.includes(t as (typeof VALID_SWAGGER_TYPES)[number])
+        );
+        if (firstValidType) {
+          normalized.type = firstValidType;
+          if (hasNull) {
+            normalized.nullable = true;
+          }
+        } else {
+          delete normalized.type;
+        }
+      }
+    } else if (typeof normalized.type === 'string') {
+      // Type is a string, validate it
+      if (!VALID_SWAGGER_TYPES.includes(normalized.type as (typeof VALID_SWAGGER_TYPES)[number])) {
+        // Remove invalid type
+        delete normalized.type;
+      }
+    } else {
+      // Type is neither string nor array, remove it
+      delete normalized.type;
+    }
+  }
+
+  // Recursively normalize properties
+  if (normalized.properties && typeof normalized.properties === 'object') {
+    const properties = normalized.properties as Record<string, unknown>;
+    const normalizedProperties: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(properties)) {
+      normalizedProperties[key] = normalizeSchemaRecursive(value);
+    }
+
+    normalized.properties = normalizedProperties;
+  }
+
+  // Recursively normalize items (for arrays)
+  if (normalized.items && typeof normalized.items === 'object') {
+    normalized.items = normalizeSchemaRecursive(normalized.items);
+  } else if (normalized.type === 'array' && !normalized.items) {
+    // If type is array but items is missing, add default items
+    normalized.items = { type: 'string' };
+  }
+
+  // Recursively normalize allOf, anyOf, oneOf
+  for (const key of ['allOf', 'anyOf', 'oneOf'] as const) {
+    if (normalized[key] && Array.isArray(normalized[key])) {
+      normalized[key] = (normalized[key] as unknown[]).map((item) =>
+        normalizeSchemaRecursive(item)
+      );
+    }
+  }
+
+  return normalized;
+}
+
+/**
+ * Normalizes requestBody schema to fix Swagger validation errors
+ * Fixes issues where properties have incorrect type definitions
+ */
+function normalizeRequestBodySchema(schema: unknown): unknown {
+  return normalizeSchemaRecursive(schema);
+}
+
+/**
+ * Normalizes requestBody to fix Swagger validation errors
+ */
+function normalizeRequestBody(requestBody: unknown): unknown {
+  if (!requestBody || typeof requestBody !== 'object') {
+    return requestBody;
+  }
+
+  const body = requestBody as Record<string, unknown>;
+
+  // If requestBody has content, normalize schemas within it
+  if (body.content && typeof body.content === 'object') {
+    const content = body.content as Record<string, unknown>;
+    const normalizedContent: Record<string, unknown> = {};
+
+    for (const [contentType, contentValue] of Object.entries(content)) {
+      if (contentValue && typeof contentValue === 'object') {
+        const contentObj = contentValue as Record<string, unknown>;
+        if (contentObj.schema) {
+          normalizedContent[contentType] = {
+            ...contentObj,
+            schema: normalizeRequestBodySchema(contentObj.schema),
+          };
+        } else {
+          normalizedContent[contentType] = contentValue;
+        }
+      } else {
+        normalizedContent[contentType] = contentValue;
+      }
+    }
+
+    return {
+      ...body,
+      content: normalizedContent,
+    };
+  }
+
+  return requestBody;
+}
+
+/**
  * Ensures responses property exists and has required description
  * If responses is missing, adds default 200 response
  * If responses exists but lacks description, adds default description
@@ -69,10 +221,19 @@ function ensureResponses(
     return undefined;
   }
 
+  // Normalize requestBody if it exists
+  const operationAny = operation as Record<string, unknown>;
+  const normalizedOperation = { ...operation };
+  if ('requestBody' in operationAny && operationAny.requestBody) {
+    (normalizedOperation as Record<string, unknown>).requestBody = normalizeRequestBody(
+      operationAny.requestBody
+    );
+  }
+
   // If responses is missing, add default
-  if (!operation.responses) {
+  if (!normalizedOperation.responses) {
     return {
-      ...operation,
+      ...normalizedOperation,
       responses: {
         '200': {
           description: 'Success',
@@ -87,7 +248,7 @@ function ensureResponses(
   }
 
   // Ensure each response has description
-  const responses = operation.responses as Record<
+  const responses = normalizedOperation.responses as Record<
     string,
     { description?: string; [key: string]: unknown }
   >;
@@ -105,7 +266,7 @@ function ensureResponses(
   }
 
   return {
-    ...operation,
+    ...normalizedOperation,
     responses: transformedResponses,
   } as typeof operation;
 }
@@ -134,6 +295,32 @@ function addAuthTag(pathItem: Path): Path {
 }
 
 /**
+ * Normalizes parameters to fix Swagger validation errors
+ * Recursively normalizes schema in each parameter
+ */
+function normalizeParameters(parameters: unknown): unknown {
+  if (!Array.isArray(parameters)) {
+    return parameters;
+  }
+
+  return parameters.map((param) => {
+    if (!param || typeof param !== 'object') {
+      return param;
+    }
+
+    const paramObj = param as Record<string, unknown>;
+    const normalized: Record<string, unknown> = { ...paramObj };
+
+    // Normalize schema if it exists
+    if (normalized.schema) {
+      normalized.schema = normalizeSchemaRecursive(normalized.schema);
+    }
+
+    return normalized;
+  });
+}
+
+/**
  * Converts Better Auth Path to NestJS Swagger PathItemObject
  * Ensures all operations have required responses property
  */
@@ -144,10 +331,18 @@ function convertPathToPathItemObject(pathItem: Path): PathItemObject {
   if (pathItem.get) {
     const operation = ensureResponses(pathItem.get);
     if (operation?.responses) {
-      converted.get = {
+      const operationAny = operation as Record<string, unknown>;
+      const convertedOperation: Record<string, unknown> = {
         ...operation,
         responses: operation.responses as OperationObject['responses'],
-      } as OperationObject;
+      };
+
+      // Normalize parameters if they exist
+      if ('parameters' in operationAny && operationAny.parameters) {
+        convertedOperation.parameters = normalizeParameters(operationAny.parameters);
+      }
+
+      converted.get = convertedOperation as unknown as OperationObject;
     }
   }
 
@@ -155,10 +350,18 @@ function convertPathToPathItemObject(pathItem: Path): PathItemObject {
   if (pathItem.post) {
     const operation = ensureResponses(pathItem.post);
     if (operation?.responses) {
-      converted.post = {
+      const operationAny = operation as Record<string, unknown>;
+      const convertedOperation: Record<string, unknown> = {
         ...operation,
         responses: operation.responses as OperationObject['responses'],
-      } as OperationObject;
+      };
+
+      // Normalize parameters if they exist
+      if ('parameters' in operationAny && operationAny.parameters) {
+        convertedOperation.parameters = normalizeParameters(operationAny.parameters);
+      }
+
+      converted.post = convertedOperation as unknown as OperationObject;
     }
   }
 
@@ -167,8 +370,11 @@ function convertPathToPathItemObject(pathItem: Path): PathItemObject {
   const pathItemAny = pathItem as Record<string, unknown>;
   if (pathItemAny.summary) converted.summary = pathItemAny.summary as string;
   if (pathItemAny.description) converted.description = pathItemAny.description as string;
-  if (pathItemAny.parameters)
-    converted.parameters = pathItemAny.parameters as PathItemObject['parameters'];
+  if (pathItemAny.parameters) {
+    converted.parameters = normalizeParameters(
+      pathItemAny.parameters
+    ) as PathItemObject['parameters'];
+  }
   if (pathItemAny.servers) converted.servers = pathItemAny.servers as PathItemObject['servers'];
 
   return converted;
