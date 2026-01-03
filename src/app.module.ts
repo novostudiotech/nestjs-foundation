@@ -2,15 +2,18 @@ import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { InjectDataSource, TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { getBetterAuthConfig } from './auth/auth.config';
 import { EnvConfig, validateEnv } from './config';
 import { getDatabaseConfig } from './config/db.config';
 import { HealthModule } from './health/health.module';
+import { MetricsController } from './metrics/metrics.controller';
 
 @Module({
   imports: [
@@ -83,7 +86,9 @@ import { HealthModule } from './health/health.module';
       },
       inject: [ConfigService],
     }),
-    PrometheusModule.register(),
+    PrometheusModule.register({
+      controller: MetricsController,
+    }),
     HealthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -115,6 +120,15 @@ import { HealthModule } from './health/health.module';
 
         const dataSource = await new DataSource(options).initialize();
         return dataSource;
+      },
+      inject: [ConfigService],
+    }),
+    AuthModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService<EnvConfig>) => {
+        const databaseUrl = configService.get('DATABASE_URL');
+        const secret = configService.get('AUTH_SECRET');
+        return { auth: getBetterAuthConfig({ databaseUrl, secret }) };
       },
       inject: [ConfigService],
     }),

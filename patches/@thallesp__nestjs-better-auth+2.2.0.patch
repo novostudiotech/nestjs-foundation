@@ -1,0 +1,15 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 21cbf0acf07deb7d7e63de16c6f4659ff8aff667..8d8e1836068374129607e22b74709fefa0937fbd 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -319,7 +319,9 @@ exports.AuthModule = class AuthModule extends ConfigurableModuleClass {
+       consumer.apply(SkipBodyParsingMiddleware(basePath)).forRoutes("*path");
+     }
+     const handler = node.toNodeHandler(this.options.auth);
+-    this.adapter.httpAdapter.getInstance().use(`${basePath}/*path`, (req, res) => {
++    // Fix: Use correct Express route pattern - just basePath without wildcard
++    // Express will match all paths starting with basePath and strip the prefix
++    this.adapter.httpAdapter.getInstance().use(basePath, (req, res) => {
+       if (this.options.middleware) {
+         return this.options.middleware(req, res, () => handler(req, res));
+       }

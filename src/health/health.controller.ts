@@ -7,9 +7,11 @@ import {
   HealthIndicatorFunction,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
-@ApiTags('health')
+@ApiTags('Health')
 @Controller('health')
+@AllowAnonymous()
 export class HealthController {
   constructor(
     private readonly health: HealthCheckService,

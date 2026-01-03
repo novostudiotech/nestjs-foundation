@@ -1,14 +1,19 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AuthService } from '@thallesp/nestjs-better-auth';
+import type { Auth } from 'better-auth';
 import { Logger } from 'nestjs-pino';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module';
+import { generateBetterAuthOpenAPISchema } from './auth/openapi';
 import { appConfig } from './config';
+import { mergeOpenAPIDocuments } from './swagger/openapi-merge.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true, // Wait until a custom logger is attached
+    bodyParser: false, // Required for Better Auth, the library will automatically re-add the default body parsers.
   });
 
   const logger = app.get(Logger);
@@ -30,7 +35,12 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  console.log(document);
+
+  // Integrate Better Auth OpenAPI schema
+  // Get auth instance from AuthService (already created in AuthModule)
+  const authService = app.get<AuthService<Auth>>(AuthService);
+  const betterAuthSchema = await generateBetterAuthOpenAPISchema(authService.instance);
+  if (betterAuthSchema) mergeOpenAPIDocuments(document, betterAuthSchema);
   SwaggerModule.setup('docs', app, cleanupOpenApiDoc(document));
 
   const configService = app.get(ConfigService);
