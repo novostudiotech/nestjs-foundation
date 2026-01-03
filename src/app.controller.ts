@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { ValidationErrorDto } from './app/dto/validation-error.dto';
@@ -21,7 +21,6 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  @ApiSecurity('apiKey')
   @ApiOperation({ summary: 'Get hello message' })
   @ApiResponse({ status: 200, description: 'Returns a hello message' })
   getHello(): string {
