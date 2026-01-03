@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   AllowAnonymous,
@@ -89,9 +89,10 @@ export class AppController {
     description: 'Validation failed',
     type: ValidationErrorDto,
   })
-  updateUser(@Body() updateUserDto: CreateUserDto) {
+  updateUser(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
     return {
       message: 'User updated successfully',
+      id,
       user: updateUserDto,
     };
   }
@@ -105,9 +106,10 @@ export class AppController {
     description: 'Validation failed',
     type: ValidationErrorDto,
   })
-  patchUser(@Body() patchUserDto: CreateUserDto) {
+  patchUser(@Param('id') id: string, @Body() patchUserDto: CreateUserDto) {
     return {
       message: 'User partially updated successfully',
+      id,
       user: patchUserDto,
     };
   }

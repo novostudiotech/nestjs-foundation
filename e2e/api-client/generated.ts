@@ -6,17 +6,81 @@
  * OpenAPI spec version: 1.0
  */
 
-import { apiClient } from './http-client';
-import type { CreateUserDto, HealthControllerCheck200 } from './model';
+import { apiClient } from './axios';
+import type {
+  ChangeEmail200,
+  ChangeEmailBody,
+  ChangePassword200,
+  ChangePasswordBody,
+  CreateUserDto,
+  DeleteUser200,
+  DeleteUserBody,
+  GetAuthAccountInfo200,
+  GetAuthDeleteUserCallback200,
+  GetAuthDeleteUserCallbackParams,
+  GetAuthOk200,
+  GetAuthVerifyEmail200,
+  GetAuthVerifyEmailParams,
+  GetSession200,
+  HealthControllerCheck200,
+  LinkSocialAccount200,
+  LinkSocialAccountBody,
+  ListUserAccounts200Item,
+  PostAuthGetAccessToken200,
+  PostAuthGetAccessTokenBody,
+  PostAuthRefreshToken200,
+  PostAuthRefreshTokenBody,
+  PostAuthRevokeOtherSessions200,
+  PostAuthRevokeOtherSessionsBody,
+  PostAuthRevokeSession200,
+  PostAuthRevokeSessionBody,
+  PostAuthRevokeSessions200,
+  PostAuthRevokeSessionsBody,
+  PostAuthUnlinkAccount200,
+  PostAuthUnlinkAccountBody,
+  RequestPasswordReset200,
+  RequestPasswordResetBody,
+  ResetPassword200,
+  ResetPasswordBody,
+  ResetPasswordCallback200,
+  ResetPasswordCallbackParams,
+  SendVerificationEmail200,
+  SendVerificationEmailBody,
+  Session,
+  SignInEmail200,
+  SignInEmailBody,
+  SignOut200,
+  SignOutBody,
+  SignUpWithEmailAndPassword200,
+  SignUpWithEmailAndPasswordBody,
+  SocialSignIn200,
+  SocialSignInBody,
+  UpdateUser200,
+  UpdateUserBody,
+} from './model';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getNestJSFoundationAPI = () => {
   /**
-   * @summary Get hello message
+   * @summary Get hello message (public route)
    */
   const appControllerGetHello = (options?: SecondParameter<typeof apiClient<void>>) => {
     return apiClient<void>({ url: `/`, method: 'GET' }, options);
+  };
+
+  /**
+   * @summary Get current user profile (protected route)
+   */
+  const appControllerGetProfile = (options?: SecondParameter<typeof apiClient<void>>) => {
+    return apiClient<void>({ url: `/me`, method: 'GET' }, options);
+  };
+
+  /**
+   * @summary Get optional auth info (authentication is optional)
+   */
+  const appControllerGetOptional = (options?: SecondParameter<typeof apiClient<void>>) => {
+    return apiClient<void>({ url: `/optional`, method: 'GET' }, options);
   };
 
   /**
@@ -37,7 +101,45 @@ export const getNestJSFoundationAPI = () => {
     );
   };
 
-  const prometheusControllerIndex = (options?: SecondParameter<typeof apiClient<void>>) => {
+  /**
+   * @summary Update a user (PUT with body parser test)
+   */
+  const appControllerUpdateUser = (
+    id: string,
+    createUserDto: CreateUserDto,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>(
+      {
+        url: `/users/${id}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: createUserDto,
+      },
+      options
+    );
+  };
+
+  /**
+   * @summary Partially update a user (PATCH with body parser test)
+   */
+  const appControllerPatchUser = (
+    id: string,
+    createUserDto: CreateUserDto,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>(
+      {
+        url: `/users/${id}`,
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        data: createUserDto,
+      },
+      options
+    );
+  };
+
+  const metricsControllerIndex = (options?: SecondParameter<typeof apiClient<void>>) => {
     return apiClient<void>({ url: `/metrics`, method: 'GET' }, options);
   };
 
@@ -50,22 +152,556 @@ export const getNestJSFoundationAPI = () => {
     return apiClient<HealthControllerCheck200>({ url: `/health`, method: 'GET' }, options);
   };
 
+  /**
+   * Sign in with a social provider
+   */
+  const socialSignIn = (
+    socialSignInBody: SocialSignInBody,
+    options?: SecondParameter<typeof apiClient<SocialSignIn200>>
+  ) => {
+    return apiClient<SocialSignIn200>(
+      {
+        url: `/auth/sign-in/social`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: socialSignInBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Get the current session
+   */
+  const getSession = (options?: SecondParameter<typeof apiClient<GetSession200>>) => {
+    return apiClient<GetSession200>({ url: `/auth/get-session`, method: 'GET' }, options);
+  };
+
+  /**
+   * Sign out the current user
+   */
+  const signOut = (
+    signOutBody: SignOutBody,
+    options?: SecondParameter<typeof apiClient<SignOut200>>
+  ) => {
+    return apiClient<SignOut200>(
+      {
+        url: `/auth/sign-out`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: signOutBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Sign up a user using email and password
+   */
+  const signUpWithEmailAndPassword = (
+    signUpWithEmailAndPasswordBody: SignUpWithEmailAndPasswordBody,
+    options?: SecondParameter<typeof apiClient<SignUpWithEmailAndPassword200>>
+  ) => {
+    return apiClient<SignUpWithEmailAndPassword200>(
+      {
+        url: `/auth/sign-up/email`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: signUpWithEmailAndPasswordBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Sign in with email and password
+   */
+  const signInEmail = (
+    signInEmailBody: SignInEmailBody,
+    options?: SecondParameter<typeof apiClient<SignInEmail200>>
+  ) => {
+    return apiClient<SignInEmail200>(
+      {
+        url: `/auth/sign-in/email`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: signInEmailBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Reset the password for a user
+   */
+  const resetPassword = (
+    resetPasswordBody: ResetPasswordBody,
+    options?: SecondParameter<typeof apiClient<ResetPassword200>>
+  ) => {
+    return apiClient<ResetPassword200>(
+      {
+        url: `/auth/reset-password`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: resetPasswordBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Verify the email of the user
+   */
+  const getAuthVerifyEmail = (
+    params: GetAuthVerifyEmailParams,
+    options?: SecondParameter<typeof apiClient<GetAuthVerifyEmail200>>
+  ) => {
+    return apiClient<GetAuthVerifyEmail200>(
+      { url: `/auth/verify-email`, method: 'GET', params },
+      options
+    );
+  };
+
+  /**
+   * Send a verification email to the user
+   */
+  const sendVerificationEmail = (
+    sendVerificationEmailBody: SendVerificationEmailBody,
+    options?: SecondParameter<typeof apiClient<SendVerificationEmail200>>
+  ) => {
+    return apiClient<SendVerificationEmail200>(
+      {
+        url: `/auth/send-verification-email`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: sendVerificationEmailBody,
+      },
+      options
+    );
+  };
+
+  const changeEmail = (
+    changeEmailBody: ChangeEmailBody,
+    options?: SecondParameter<typeof apiClient<ChangeEmail200>>
+  ) => {
+    return apiClient<ChangeEmail200>(
+      {
+        url: `/auth/change-email`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: changeEmailBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Change the password of the user
+   */
+  const changePassword = (
+    changePasswordBody: ChangePasswordBody,
+    options?: SecondParameter<typeof apiClient<ChangePassword200>>
+  ) => {
+    return apiClient<ChangePassword200>(
+      {
+        url: `/auth/change-password`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: changePasswordBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Update the current user
+   */
+  const updateUser = (
+    updateUserBody: UpdateUserBody,
+    options?: SecondParameter<typeof apiClient<UpdateUser200>>
+  ) => {
+    return apiClient<UpdateUser200>(
+      {
+        url: `/auth/update-user`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateUserBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Delete the user
+   */
+  const deleteUser = (
+    deleteUserBody: DeleteUserBody,
+    options?: SecondParameter<typeof apiClient<DeleteUser200>>
+  ) => {
+    return apiClient<DeleteUser200>(
+      {
+        url: `/auth/delete-user`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteUserBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Send a password reset email to the user
+   */
+  const requestPasswordReset = (
+    requestPasswordResetBody: RequestPasswordResetBody,
+    options?: SecondParameter<typeof apiClient<RequestPasswordReset200>>
+  ) => {
+    return apiClient<RequestPasswordReset200>(
+      {
+        url: `/auth/request-password-reset`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: requestPasswordResetBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Redirects the user to the callback URL with the token
+   */
+  const resetPasswordCallback = (
+    token: string,
+    params: ResetPasswordCallbackParams,
+    options?: SecondParameter<typeof apiClient<ResetPasswordCallback200>>
+  ) => {
+    return apiClient<ResetPasswordCallback200>(
+      { url: `/auth/reset-password/${token}`, method: 'GET', params },
+      options
+    );
+  };
+
+  /**
+   * List all active sessions for the user
+   */
+  const listUserSessions = (options?: SecondParameter<typeof apiClient<Session[]>>) => {
+    return apiClient<Session[]>({ url: `/auth/list-sessions`, method: 'GET' }, options);
+  };
+
+  /**
+   * Revoke a single session
+   */
+  const postAuthRevokeSession = (
+    postAuthRevokeSessionBody: PostAuthRevokeSessionBody,
+    options?: SecondParameter<typeof apiClient<PostAuthRevokeSession200>>
+  ) => {
+    return apiClient<PostAuthRevokeSession200>(
+      {
+        url: `/auth/revoke-session`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postAuthRevokeSessionBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Revoke all sessions for the user
+   */
+  const postAuthRevokeSessions = (
+    postAuthRevokeSessionsBody: PostAuthRevokeSessionsBody,
+    options?: SecondParameter<typeof apiClient<PostAuthRevokeSessions200>>
+  ) => {
+    return apiClient<PostAuthRevokeSessions200>(
+      {
+        url: `/auth/revoke-sessions`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postAuthRevokeSessionsBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Revoke all other sessions for the user except the current one
+   */
+  const postAuthRevokeOtherSessions = (
+    postAuthRevokeOtherSessionsBody: PostAuthRevokeOtherSessionsBody,
+    options?: SecondParameter<typeof apiClient<PostAuthRevokeOtherSessions200>>
+  ) => {
+    return apiClient<PostAuthRevokeOtherSessions200>(
+      {
+        url: `/auth/revoke-other-sessions`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postAuthRevokeOtherSessionsBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Link a social account to the user
+   */
+  const linkSocialAccount = (
+    linkSocialAccountBody: LinkSocialAccountBody,
+    options?: SecondParameter<typeof apiClient<LinkSocialAccount200>>
+  ) => {
+    return apiClient<LinkSocialAccount200>(
+      {
+        url: `/auth/link-social`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: linkSocialAccountBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * List all accounts linked to the user
+   */
+  const listUserAccounts = (
+    options?: SecondParameter<typeof apiClient<ListUserAccounts200Item[]>>
+  ) => {
+    return apiClient<ListUserAccounts200Item[]>(
+      { url: `/auth/list-accounts`, method: 'GET' },
+      options
+    );
+  };
+
+  /**
+   * Callback to complete user deletion with verification token
+   */
+  const getAuthDeleteUserCallback = (
+    params?: GetAuthDeleteUserCallbackParams,
+    options?: SecondParameter<typeof apiClient<GetAuthDeleteUserCallback200>>
+  ) => {
+    return apiClient<GetAuthDeleteUserCallback200>(
+      { url: `/auth/delete-user/callback`, method: 'GET', params },
+      options
+    );
+  };
+
+  /**
+   * Unlink an account
+   */
+  const postAuthUnlinkAccount = (
+    postAuthUnlinkAccountBody: PostAuthUnlinkAccountBody,
+    options?: SecondParameter<typeof apiClient<PostAuthUnlinkAccount200>>
+  ) => {
+    return apiClient<PostAuthUnlinkAccount200>(
+      {
+        url: `/auth/unlink-account`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postAuthUnlinkAccountBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Refresh the access token using a refresh token
+   */
+  const postAuthRefreshToken = (
+    postAuthRefreshTokenBody: PostAuthRefreshTokenBody,
+    options?: SecondParameter<typeof apiClient<PostAuthRefreshToken200>>
+  ) => {
+    return apiClient<PostAuthRefreshToken200>(
+      {
+        url: `/auth/refresh-token`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postAuthRefreshTokenBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Get a valid access token, doing a refresh if needed
+   */
+  const postAuthGetAccessToken = (
+    postAuthGetAccessTokenBody: PostAuthGetAccessTokenBody,
+    options?: SecondParameter<typeof apiClient<PostAuthGetAccessToken200>>
+  ) => {
+    return apiClient<PostAuthGetAccessToken200>(
+      {
+        url: `/auth/get-access-token`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postAuthGetAccessTokenBody,
+      },
+      options
+    );
+  };
+
+  /**
+   * Get the account info provided by the provider
+   */
+  const getAuthAccountInfo = (
+    options?: SecondParameter<typeof apiClient<GetAuthAccountInfo200>>
+  ) => {
+    return apiClient<GetAuthAccountInfo200>({ url: `/auth/account-info`, method: 'GET' }, options);
+  };
+
+  /**
+   * Check if the API is working
+   */
+  const getAuthOk = (options?: SecondParameter<typeof apiClient<GetAuthOk200>>) => {
+    return apiClient<GetAuthOk200>({ url: `/auth/ok`, method: 'GET' }, options);
+  };
+
+  /**
+   * Displays an error page
+   */
+  const getAuthError = (options?: SecondParameter<typeof apiClient<string>>) => {
+    return apiClient<string>({ url: `/auth/error`, method: 'GET' }, options);
+  };
+
   return {
     appControllerGetHello,
+    appControllerGetProfile,
+    appControllerGetOptional,
     appControllerCreateUser,
-    prometheusControllerIndex,
+    appControllerUpdateUser,
+    appControllerPatchUser,
+    metricsControllerIndex,
     healthControllerCheck,
+    socialSignIn,
+    getSession,
+    signOut,
+    signUpWithEmailAndPassword,
+    signInEmail,
+    resetPassword,
+    getAuthVerifyEmail,
+    sendVerificationEmail,
+    changeEmail,
+    changePassword,
+    updateUser,
+    deleteUser,
+    requestPasswordReset,
+    resetPasswordCallback,
+    listUserSessions,
+    postAuthRevokeSession,
+    postAuthRevokeSessions,
+    postAuthRevokeOtherSessions,
+    linkSocialAccount,
+    listUserAccounts,
+    getAuthDeleteUserCallback,
+    postAuthUnlinkAccount,
+    postAuthRefreshToken,
+    postAuthGetAccessToken,
+    getAuthAccountInfo,
+    getAuthOk,
+    getAuthError,
   };
 };
 export type AppControllerGetHelloResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerGetHello']>>
 >;
+export type AppControllerGetProfileResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerGetProfile']>>
+>;
+export type AppControllerGetOptionalResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerGetOptional']>>
+>;
 export type AppControllerCreateUserResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerCreateUser']>>
 >;
-export type PrometheusControllerIndexResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['prometheusControllerIndex']>>
+export type AppControllerUpdateUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerUpdateUser']>>
+>;
+export type AppControllerPatchUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerPatchUser']>>
+>;
+export type MetricsControllerIndexResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['metricsControllerIndex']>>
 >;
 export type HealthControllerCheckResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['healthControllerCheck']>>
+>;
+export type SocialSignInResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['socialSignIn']>>
+>;
+export type GetSessionResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['getSession']>>
+>;
+export type SignOutResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['signOut']>>
+>;
+export type SignUpWithEmailAndPasswordResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['signUpWithEmailAndPassword']>>
+>;
+export type SignInEmailResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['signInEmail']>>
+>;
+export type ResetPasswordResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['resetPassword']>>
+>;
+export type GetAuthVerifyEmailResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['getAuthVerifyEmail']>>
+>;
+export type SendVerificationEmailResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['sendVerificationEmail']>>
+>;
+export type ChangeEmailResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['changeEmail']>>
+>;
+export type ChangePasswordResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['changePassword']>>
+>;
+export type UpdateUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['updateUser']>>
+>;
+export type DeleteUserResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['deleteUser']>>
+>;
+export type RequestPasswordResetResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['requestPasswordReset']>>
+>;
+export type ResetPasswordCallbackResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['resetPasswordCallback']>>
+>;
+export type ListUserSessionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['listUserSessions']>>
+>;
+export type PostAuthRevokeSessionResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['postAuthRevokeSession']>>
+>;
+export type PostAuthRevokeSessionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['postAuthRevokeSessions']>>
+>;
+export type PostAuthRevokeOtherSessionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['postAuthRevokeOtherSessions']>>
+>;
+export type LinkSocialAccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['linkSocialAccount']>>
+>;
+export type ListUserAccountsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['listUserAccounts']>>
+>;
+export type GetAuthDeleteUserCallbackResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['getAuthDeleteUserCallback']>>
+>;
+export type PostAuthUnlinkAccountResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['postAuthUnlinkAccount']>>
+>;
+export type PostAuthRefreshTokenResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['postAuthRefreshToken']>>
+>;
+export type PostAuthGetAccessTokenResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['postAuthGetAccessToken']>>
+>;
+export type GetAuthAccountInfoResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['getAuthAccountInfo']>>
+>;
+export type GetAuthOkResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['getAuthOk']>>
+>;
+export type GetAuthErrorResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['getAuthError']>>
 >;
