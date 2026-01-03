@@ -17,6 +17,7 @@ export function getDatabaseConfig(databaseUrl: string): DataSourceOptions {
     url: databaseUrl,
     entities: ['dist/**/*.entity.js'],
     migrations: ['dist/migrations/*.js'],
+    migrationsTableName: 'migrations',
     ssl: requiresSsl ? { rejectUnauthorized: true } : false,
   };
 }
