@@ -12,6 +12,9 @@ WORKDIR /app
 # Copy package files first for better layer caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
+# Copy patches directory (required for pnpm install)
+COPY patches ./patches
+
 # Fetch dependencies to store store directory (offline install preparation)
 # This creates a cache that can be reused for faster rebuilds
 RUN pnpm fetch --frozen-lockfile
@@ -35,6 +38,9 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy patches directory (required for pnpm fetch/install)
+COPY patches ./patches
 
 # Fetch only production dependencies
 RUN pnpm fetch --frozen-lockfile --prod

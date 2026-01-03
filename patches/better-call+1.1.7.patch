@@ -1,0 +1,13 @@
+diff --git a/dist/openapi.d.mts b/dist/openapi.d.mts
+index 955ae1fef13edc8502c7cd620650cbc2f7be3c89..b19e13676927638666da07aac7a4300ba28c918d 100644
+--- a/dist/openapi.d.mts
++++ b/dist/openapi.d.mts
+@@ -4,7 +4,7 @@ import { Endpoint } from "./endpoint.mjs";
+ type OpenAPISchemaType = "string" | "number" | "integer" | "boolean" | "array" | "object";
+ interface OpenAPIParameter {
+   in: "query" | "path" | "header" | "cookie";
+-  name?: string;
++  name: string;
+   description?: string;
+   required?: boolean;
+   schema?: {

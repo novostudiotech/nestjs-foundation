@@ -13,6 +13,7 @@ export const test = base.extend<{
     const client = axios.create({
       baseURL,
       validateStatus: () => true, // Don't throw on any status code
+      withCredentials: true, // Enable cookies
     });
 
     await use(client);

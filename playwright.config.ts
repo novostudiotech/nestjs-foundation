@@ -4,15 +4,12 @@ import { config } from 'dotenv';
 // Load test environment variables from .env.test
 config({ path: '.env.test' });
 
-const PORT = process.env.PORT || 13000;
+const PORT = process.env.PORT || '13000';
+
+// TEST_DATABASE_URL is required to ensure we don't accidentally run tests against production database
+if (!process.env.TEST_DATABASE_URL) throw new Error('TEST_DATABASE_URL is not set');
+
 const baseURL = `http://localhost:${PORT}`;
-
-// We use TEST_DATABASE_URL here to make sure we don't accidentally run tests against production or local database defined in .env file. So we set TEST_DATABASE_URL explicitly.
-const DATABASE_URL = process.env.TEST_DATABASE_URL;
-
-if (!DATABASE_URL) {
-  throw new Error('TEST_DATABASE_URL is not set');
-}
 
 export default defineConfig({
   testDir: './e2e',
@@ -37,15 +34,17 @@ export default defineConfig({
     // In CI, build step runs before E2E tests, so dist/ will exist
     // For local development, run `pnpm build` first
     command: process.env.CI ? `NODE_ENV=test pnpm start:prod` : `NODE_ENV=test pnpm run dev`,
-    stdout: process.env.DEBUG ? 'pipe' : 'ignore',
-    stderr: process.env.DEBUG ? 'pipe' : 'ignore',
+    stdout: 'pipe',
+    stderr: 'pipe',
     url: `${baseURL}/health`,
     reuseExistingServer: !process.env.CI,
-    timeout: 60000,
+    timeout: 10000,
     env: {
+      // Proxying all environment variables from .env.test
+      ...process.env,
       NODE_ENV: 'test',
-      PORT: PORT.toString(),
-      DATABASE_URL,
+      PORT,
+      DATABASE_URL: process.env.TEST_DATABASE_URL,
     },
   },
 });
