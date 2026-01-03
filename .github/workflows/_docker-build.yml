@@ -14,6 +14,13 @@ on:
         type: string
       build-args:
         type: string
+      scan:
+        type: boolean
+        default: false
+        description: 'Run Trivy security scan after build'
+      platforms:
+        required: false
+        description: 'Platforms to build for (e.g., linux/amd64). If not specified, builds for runner platform.'
     secrets:
       DIGITALOCEAN_CD_ACCESS_TOKEN:
         required: false
@@ -26,6 +33,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
 
     steps:
       - uses: actions/checkout@v6
@@ -84,6 +92,7 @@ jobs:
           context: .
           push: ${{ inputs.push }}
           tags: ${{ env.DOCKER_IMAGE }}
+          load: ${{ !inputs.push && inputs.scan }}
           cache-from: |
             type=gha,scope=${{ inputs.target }}
             ${{ inputs.push && format('type=registry,ref={0}:{1}-cache', inputs.image, inputs.target) || '' }}
@@ -92,6 +101,21 @@ jobs:
             ${{ inputs.push && format('type=registry,ref={0}:{1}-cache,mode=max', inputs.image, inputs.target) || '' }}
           target: ${{ inputs.target }}
           build-args: ${{ inputs.build-args }}
-          platforms: linux/amd64
+          platforms: ${{ inputs.platforms }}
           provenance: true
           sbom: true
+
+      - name: Run Trivy vulnerability scanner
+        if: inputs.scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_IMAGE }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        if: always() && inputs.scan
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results.sarif'
