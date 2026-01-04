@@ -50,17 +50,17 @@ test.describe('Better Auth', () => {
     }
 
     // Step 3: Verify we can access protected route with session
-    const profileResponse = await http.get('/me', {
+    const productsResponse = await http.get('/products/mine', {
       headers: cookies ? { Cookie: cookies } : undefined,
     });
 
-    expect(profileResponse.status).toBe(200);
-    expect(profileResponse.data).toBeDefined();
-    expect(profileResponse.data.user).toBeDefined();
-    expect(profileResponse.data.user.email).toBe(testUser.email);
-    expect(profileResponse.data.user.name).toBe(testUser.name);
-    expect(profileResponse.data.session).toBeDefined();
-    expect(profileResponse.data.session.id).toBeDefined();
+    expect(productsResponse.status).toBe(200);
+    expect(productsResponse.data).toBeDefined();
+    expect(productsResponse.data.data).toBeDefined();
+    expect(Array.isArray(productsResponse.data.data)).toBe(true);
+    expect(productsResponse.data.pagination).toBeDefined();
+    expect(productsResponse.data.pagination.total).toBeDefined();
+    expect(typeof productsResponse.data.pagination.total).toBe('number');
   });
 
   test('should fail to sign in with wrong password', async ({ http }) => {
@@ -87,7 +87,7 @@ test.describe('Better Auth', () => {
   });
 
   test('should fail to access protected route without authentication', async ({ http }) => {
-    const profileResponse = await http.get('/me');
+    const profileResponse = await http.get('/products/mine');
 
     expect(profileResponse.status).toBe(401);
   });

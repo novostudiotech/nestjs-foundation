@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   AllowAnonymous,
@@ -6,21 +6,19 @@ import {
   Session,
   type UserSession,
 } from '@thallesp/nestjs-better-auth';
-import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
-import { ValidationErrorDto } from './app/dto/validation-error.dto';
 import { AppService } from './app.service';
 
-// Simple Zod schema for user creation
-const CreateUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2),
-  age: z.number().int().min(18).optional(),
-});
-
-// DTO generated from Zod schema with automatic Swagger integration
-class CreateUserDto extends createZodDto(CreateUserSchema) {}
-
+/**
+ * AppController - Minimal example controller demonstrating authorization patterns
+ *
+ * For comprehensive examples of validation, body parser, CRUD operations, etc.,
+ * see the Products module (src/products/).
+ *
+ * This controller focuses on demonstrating:
+ * - Public routes (@AllowAnonymous)
+ * - Protected routes (require authentication)
+ * - Optional authentication (@OptionalAuth)
+ */
 @ApiTags('app')
 @Controller()
 export class AppController {
@@ -34,24 +32,12 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('me')
-  @ApiOperation({ summary: 'Get current user profile (protected route)' })
-  @ApiResponse({ status: 200, description: 'Returns current user information' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getProfile(@Session() session: UserSession) {
-    return {
-      user: session.user,
-      session: {
-        id: session.session.id,
-        expiresAt: session.session.expiresAt,
-      },
-    };
-  }
-
   @Get('optional')
   @OptionalAuth()
   @ApiOperation({
     summary: 'Get optional auth info (authentication is optional)',
+    description:
+      'Example of a route with optional authentication. Works both with and without authentication, returning different data based on auth status.',
   })
   @ApiResponse({
     status: 200,
@@ -61,56 +47,6 @@ export class AppController {
     return {
       authenticated: !!session,
       user: session?.user ?? null,
-    };
-  }
-
-  @Post('users')
-  @AllowAnonymous()
-  @ApiOperation({ summary: 'Create a new user (Zod validation example)' })
-  @ApiResponse({ status: 201, description: 'User created successfully' })
-  @ApiResponse({
-    status: 400,
-    description: 'Validation failed',
-    type: ValidationErrorDto,
-  })
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return {
-      message: 'User created successfully',
-      user: createUserDto,
-    };
-  }
-
-  @Put('users/:id')
-  @AllowAnonymous()
-  @ApiOperation({ summary: 'Update a user (PUT with body parser test)' })
-  @ApiResponse({ status: 200, description: 'User updated successfully' })
-  @ApiResponse({
-    status: 400,
-    description: 'Validation failed',
-    type: ValidationErrorDto,
-  })
-  updateUser(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
-    return {
-      message: 'User updated successfully',
-      id,
-      user: updateUserDto,
-    };
-  }
-
-  @Patch('users/:id')
-  @AllowAnonymous()
-  @ApiOperation({ summary: 'Partially update a user (PATCH with body parser test)' })
-  @ApiResponse({ status: 200, description: 'User partially updated successfully' })
-  @ApiResponse({
-    status: 400,
-    description: 'Validation failed',
-    type: ValidationErrorDto,
-  })
-  patchUser(@Param('id') id: string, @Body() patchUserDto: CreateUserDto) {
-    return {
-      message: 'User partially updated successfully',
-      id,
-      user: patchUserDto,
     };
   }
 }

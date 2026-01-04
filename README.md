@@ -38,6 +38,20 @@ The project should still make sense after months or years. Clear patterns, consi
 
 ---
 
+## Example Module
+
+This boilerplate includes a `Products` module (`src/products/`) as a **demonstration example** showing:
+- Zod validation with various data types (strings, numbers, booleans, enums, arrays, nested objects)
+- Different authorization decorators (`@AllowAnonymous()` for public routes, protected routes requiring authentication)
+- Query parameter validation (pagination, filtering, sorting)
+- Body parser testing (POST/PUT/PATCH with JSON)
+- Error handling patterns (400, 401, 404)
+- Complete E2E test coverage
+
+⚠️ **Important:** This module is for demonstration purposes only. **Delete it before starting your actual development** to avoid confusion and keep your codebase clean.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
