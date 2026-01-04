@@ -14,6 +14,7 @@ import { EnvConfig, validateEnv } from './config';
 import { getDatabaseConfig } from './config/db.config';
 import { HealthModule } from './health/health.module';
 import { MetricsController } from './metrics/metrics.controller';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -132,6 +133,7 @@ import { MetricsController } from './metrics/metrics.controller';
       },
       inject: [ConfigService],
     }),
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [
