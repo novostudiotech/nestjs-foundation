@@ -16,7 +16,7 @@ export default defineConfig({
       biome: true,
       override: {
         mutator: {
-          path: 'e2e/api-client/axios.ts',
+          path: 'e2e/api/client.ts',
           name: 'apiClient',
         },
       },

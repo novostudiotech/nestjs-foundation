@@ -1,6 +1,6 @@
 import { test as base, expect } from '@playwright/test';
 import axios, { AxiosInstance } from 'axios';
-import { getNestJSFoundationAPI } from './api-client';
+import { getNestJSFoundationAPI } from './api';
 import { extractCookies } from './cookies.util';
 
 /**

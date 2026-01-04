@@ -6,13 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 
-import { apiClient } from './axios';
+import { apiClient } from '../api/client';
 import type {
   ChangeEmail200,
   ChangeEmailBody,
   ChangePassword200,
   ChangePasswordBody,
-  CreateUserDto,
+  CreateProductDto,
   DeleteUser200,
   DeleteUserBody,
   GetAuthAccountInfo200,
@@ -38,6 +38,8 @@ import type {
   PostAuthRevokeSessionsBody,
   PostAuthUnlinkAccount200,
   PostAuthUnlinkAccountBody,
+  ProductsControllerFindAllParams,
+  ProductsControllerGetMineParams,
   RequestPasswordReset200,
   RequestPasswordResetBody,
   ResetPassword200,
@@ -55,6 +57,7 @@ import type {
   SignUpWithEmailAndPasswordBody,
   SocialSignIn200,
   SocialSignInBody,
+  UpdateProductDto,
   UpdateUser200,
   UpdateUserBody,
 } from './model';
@@ -69,76 +72,6 @@ export const getNestJSFoundationAPI = () => {
     return apiClient<void>({ url: `/`, method: 'GET' }, options);
   };
 
-  /**
-   * @summary Get current user profile (protected route)
-   */
-  const appControllerGetProfile = (options?: SecondParameter<typeof apiClient<void>>) => {
-    return apiClient<void>({ url: `/me`, method: 'GET' }, options);
-  };
-
-  /**
-   * @summary Get optional auth info (authentication is optional)
-   */
-  const appControllerGetOptional = (options?: SecondParameter<typeof apiClient<void>>) => {
-    return apiClient<void>({ url: `/optional`, method: 'GET' }, options);
-  };
-
-  /**
-   * @summary Create a new user (Zod validation example)
-   */
-  const appControllerCreateUser = (
-    createUserDto: CreateUserDto,
-    options?: SecondParameter<typeof apiClient<void>>
-  ) => {
-    return apiClient<void>(
-      {
-        url: `/users`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: createUserDto,
-      },
-      options
-    );
-  };
-
-  /**
-   * @summary Update a user (PUT with body parser test)
-   */
-  const appControllerUpdateUser = (
-    id: string,
-    createUserDto: CreateUserDto,
-    options?: SecondParameter<typeof apiClient<void>>
-  ) => {
-    return apiClient<void>(
-      {
-        url: `/users/${id}`,
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        data: createUserDto,
-      },
-      options
-    );
-  };
-
-  /**
-   * @summary Partially update a user (PATCH with body parser test)
-   */
-  const appControllerPatchUser = (
-    id: string,
-    createUserDto: CreateUserDto,
-    options?: SecondParameter<typeof apiClient<void>>
-  ) => {
-    return apiClient<void>(
-      {
-        url: `/users/${id}`,
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        data: createUserDto,
-      },
-      options
-    );
-  };
-
   const metricsControllerIndex = (options?: SecondParameter<typeof apiClient<void>>) => {
     return apiClient<void>({ url: `/metrics`, method: 'GET' }, options);
   };
@@ -150,6 +83,107 @@ export const getNestJSFoundationAPI = () => {
     options?: SecondParameter<typeof apiClient<HealthControllerCheck200>>
   ) => {
     return apiClient<HealthControllerCheck200>({ url: `/health`, method: 'GET' }, options);
+  };
+
+  /**
+   * @summary Create a new product (requires authentication)
+   */
+  const productsControllerCreate = (
+    createProductDto: CreateProductDto,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>(
+      {
+        url: `/products`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: createProductDto,
+      },
+      options
+    );
+  };
+
+  /**
+   * Supports query parameters for filtering by category, status, price range, stock availability, search, sorting, and pagination
+   * @summary Get all products with filtering, sorting, and pagination
+   */
+  const productsControllerFindAll = (
+    params?: ProductsControllerFindAllParams,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>({ url: `/products`, method: 'GET', params }, options);
+  };
+
+  /**
+   * Example of a protected route that requires authentication. Returns all products created by the current user with filtering, sorting, and pagination.
+   * @summary Get current user products (protected route)
+   */
+  const productsControllerGetMine = (
+    params?: ProductsControllerGetMineParams,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>({ url: `/products/mine`, method: 'GET', params }, options);
+  };
+
+  /**
+   * Returns product details. If authenticated and the product belongs to the current user, includes isOwner flag.
+   * @summary Get a product by ID
+   */
+  const productsControllerFindOne = (
+    id: string,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>({ url: `/products/${id}`, method: 'GET' }, options);
+  };
+
+  /**
+   * Replaces the entire product with the provided data. Required fields: name, price, category. Other fields are optional or have default values.
+   * @summary Update a product (full update, requires authentication)
+   */
+  const productsControllerUpdate = (
+    id: string,
+    createProductDto: CreateProductDto,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>(
+      {
+        url: `/products/${id}`,
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        data: createProductDto,
+      },
+      options
+    );
+  };
+
+  /**
+   * Updates only the provided fields. All fields are optional. Tests PATCH body parser.
+   * @summary Partially update a product (requires authentication)
+   */
+  const productsControllerPatch = (
+    id: string,
+    updateProductDto: UpdateProductDto,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>(
+      {
+        url: `/products/${id}`,
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        data: updateProductDto,
+      },
+      options
+    );
+  };
+
+  /**
+   * @summary Delete a product (requires authentication)
+   */
+  const productsControllerRemove = (
+    id: string,
+    options?: SecondParameter<typeof apiClient<void>>
+  ) => {
+    return apiClient<void>({ url: `/products/${id}`, method: 'DELETE' }, options);
   };
 
   /**
@@ -564,13 +598,15 @@ export const getNestJSFoundationAPI = () => {
 
   return {
     appControllerGetHello,
-    appControllerGetProfile,
-    appControllerGetOptional,
-    appControllerCreateUser,
-    appControllerUpdateUser,
-    appControllerPatchUser,
     metricsControllerIndex,
     healthControllerCheck,
+    productsControllerCreate,
+    productsControllerFindAll,
+    productsControllerGetMine,
+    productsControllerFindOne,
+    productsControllerUpdate,
+    productsControllerPatch,
+    productsControllerRemove,
     socialSignIn,
     getSession,
     signOut,
@@ -603,26 +639,32 @@ export const getNestJSFoundationAPI = () => {
 export type AppControllerGetHelloResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerGetHello']>>
 >;
-export type AppControllerGetProfileResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerGetProfile']>>
->;
-export type AppControllerGetOptionalResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerGetOptional']>>
->;
-export type AppControllerCreateUserResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerCreateUser']>>
->;
-export type AppControllerUpdateUserResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerUpdateUser']>>
->;
-export type AppControllerPatchUserResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['appControllerPatchUser']>>
->;
 export type MetricsControllerIndexResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['metricsControllerIndex']>>
 >;
 export type HealthControllerCheckResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['healthControllerCheck']>>
+>;
+export type ProductsControllerCreateResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['productsControllerCreate']>>
+>;
+export type ProductsControllerFindAllResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['productsControllerFindAll']>>
+>;
+export type ProductsControllerGetMineResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['productsControllerGetMine']>>
+>;
+export type ProductsControllerFindOneResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['productsControllerFindOne']>>
+>;
+export type ProductsControllerUpdateResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['productsControllerUpdate']>>
+>;
+export type ProductsControllerPatchResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['productsControllerPatch']>>
+>;
+export type ProductsControllerRemoveResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['productsControllerRemove']>>
 >;
 export type SocialSignInResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getNestJSFoundationAPI>['socialSignIn']>>
