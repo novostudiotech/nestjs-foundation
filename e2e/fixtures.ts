@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import { AxiosInstance } from 'axios';
 import { type ApiClient, createApiClient } from './api';
 import { createAxiosInstance } from './api/factory';
+import { closeTestDataSource, createDatabaseFixture, type DatabaseFixture } from './db';
 
 /**
  * Test user information
@@ -13,9 +14,9 @@ export interface TestUser {
 }
 
 /**
- * Hook-style test fixtures inspired by React hooks
+ * Test-scoped fixtures (created per test)
  */
-export const test = base.extend<{
+interface TestFixtures {
   /**
    * HTTP client hook - provides direct axios instance access
    *
@@ -72,7 +73,37 @@ export const test = base.extend<{
     api: ApiClient;
     user: TestUser;
   }>;
-}>({
+}
+
+/**
+ * Worker-scoped fixtures (created once per worker, shared across tests)
+ */
+interface WorkerFixtures {
+  /**
+   * Database hook - provides access to TypeORM repositories and database utilities
+   * Scoped to worker - connection is shared across all tests in the worker
+   *
+   * @example
+   * ```typescript
+   * test('database test', async ({ useDb }) => {
+   *   const db = useDb();
+   *
+   *   // Access typed repositories
+   *   const user = await db.userRepo.findOne({ where: { email: 'test@example.com' } });
+   *   expect(user).toBeDefined();
+   *
+   *   // Raw queries via DataSource
+   *   const result = await db.dataSource.query('SELECT COUNT(*) FROM "user"');
+   * });
+   * ```
+   */
+  useDb: () => DatabaseFixture;
+}
+
+/**
+ * Hook-style test fixtures inspired by React hooks
+ */
+export const test = base.extend<TestFixtures, WorkerFixtures>({
   useHttp: async ({ baseURL }, use) => {
     const hook = () => createAxiosInstance({ baseURL });
     await use(hook);
@@ -119,6 +150,16 @@ export const test = base.extend<{
 
     await use(hook);
   },
+
+  useDb: [
+    // biome-ignore lint/correctness/noEmptyPattern: Playwright requires object destructuring even if empty
+    async ({}, use) => {
+      const dbFixture = await createDatabaseFixture();
+      await use(() => dbFixture);
+      await closeTestDataSource();
+    },
+    { scope: 'worker' },
+  ],
 });
 
 export { expect };
