@@ -1,4 +1,3 @@
-import { extractCookies } from './cookies.util';
 import { expect, test } from './fixtures';
 
 /**
@@ -31,15 +30,10 @@ test.describe('Products Module', () => {
   };
 
   test.describe('Validation', () => {
-    test('should return 201 for valid product creation', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 201 for valid product creation', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const response = await api.productsControllerCreate(validProductData);
 
       expect(response.status).toBe(201);
       expect(response.data).toBeDefined();
@@ -51,218 +45,158 @@ test.describe('Products Module', () => {
       expect(typeof response.data.product.createdBy).toBe('string');
     });
 
-    test('should return 400 for missing required fields', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 400 for missing required fields', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          // name is required but missing
-          price: 99.99,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerCreate({
+        // name is required but missing
+        price: 99.99,
+      } as any);
 
       expect(response.status).toBe(400);
-      expect(response.data.statusCode).toBe(400);
-      expect(response.data.message).toBe('Validation failed');
-      expect(Array.isArray(response.data.errors)).toBe(true);
-      const nameError = response.data.errors.find((err: { path: string[] }) =>
-        err.path.includes('name')
-      );
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      expect(data.statusCode).toBe(400);
+      expect(data.message).toBe('Validation failed');
+      expect(Array.isArray(data.errors)).toBe(true);
+      const nameError = data.errors.find((err: { path: string[] }) => err.path.includes('name'));
       expect(nameError).toBeDefined();
     });
 
-    test('should return 400 for invalid name (too short)', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 400 for invalid name (too short)', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          name: 'A', // Too short (min 2)
-          price: 99.99,
-          category: 'electronics',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerCreate({
+        name: 'A', // Too short (min 2)
+        price: 99.99,
+        category: 'electronics',
+      } as any);
 
       expect(response.status).toBe(400);
-      const nameError = response.data.errors.find((err: { path: string[] }) =>
-        err.path.includes('name')
-      );
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      const nameError = data.errors.find((err: { path: string[] }) => err.path.includes('name'));
       expect(nameError).toBeDefined();
     });
 
-    test('should return 400 for invalid price (negative)', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 400 for invalid price (negative)', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          name: 'Test Product',
-          price: -10, // Negative price
-          category: 'electronics',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerCreate({
+        name: 'Test Product',
+        price: -10, // Negative price
+        category: 'electronics',
+      } as any);
 
       expect(response.status).toBe(400);
-      const priceError = response.data.errors.find((err: { path: string[] }) =>
-        err.path.includes('price')
-      );
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      const priceError = data.errors.find((err: { path: string[] }) => err.path.includes('price'));
       expect(priceError).toBeDefined();
     });
 
     test('should return 400 for invalid category (not in enum)', async ({
-      http,
-      authenticatedUser,
+      useAuthenticatedApi,
     }) => {
-      const { cookies } = authenticatedUser;
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          name: 'Test Product',
-          price: 99.99,
-          category: 'invalid-category', // Not in enum
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerCreate({
+        name: 'Test Product',
+        price: 99.99,
+        category: 'invalid-category', // Not in enum
+      } as any);
 
       expect(response.status).toBe(400);
-      const categoryError = response.data.errors.find((err: { path: string[] }) =>
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      const categoryError = data.errors.find((err: { path: string[] }) =>
         err.path.includes('category')
       );
       expect(categoryError).toBeDefined();
     });
 
-    test('should return 400 for invalid imageUrl (not a URL)', async ({
-      http,
-      authenticatedUser,
-    }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 400 for invalid imageUrl (not a URL)', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          name: 'Test Product',
-          price: 99.99,
-          category: 'electronics',
-          imageUrl: 'not-a-url', // Invalid URL
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerCreate({
+        name: 'Test Product',
+        price: 99.99,
+        category: 'electronics',
+        imageUrl: 'not-a-url', // Invalid URL
+      } as any);
 
       expect(response.status).toBe(400);
-      const imageUrlError = response.data.errors.find((err: { path: string[] }) =>
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      const imageUrlError = data.errors.find((err: { path: string[] }) =>
         err.path.includes('imageUrl')
       );
       expect(imageUrlError).toBeDefined();
     });
 
-    test('should return 400 for invalid tags (too many)', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 400 for invalid tags (too many)', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          name: 'Test Product',
-          price: 99.99,
-          category: 'electronics',
-          tags: Array(11).fill('tag'), // Too many (max 10)
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerCreate({
+        name: 'Test Product',
+        price: 99.99,
+        category: 'electronics',
+        tags: Array(11).fill('tag'), // Too many (max 10)
+      } as any);
 
       expect(response.status).toBe(400);
-      const tagsError = response.data.errors.find((err: { path: string[] }) =>
-        err.path.includes('tags')
-      );
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      const tagsError = data.errors.find((err: { path: string[] }) => err.path.includes('tags'));
       expect(tagsError).toBeDefined();
     });
 
     test('should return 400 for invalid nested object (metadata.dimensions)', async ({
-      http,
-      authenticatedUser,
+      useAuthenticatedApi,
     }) => {
-      const { cookies } = authenticatedUser;
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          name: 'Test Product',
-          price: 99.99,
-          category: 'electronics',
-          metadata: {
-            dimensions: {
-              width: -10, // Negative value
-              height: 20,
-              depth: 5,
-            },
+      const response = await api.productsControllerCreate({
+        name: 'Test Product',
+        price: 99.99,
+        category: 'electronics',
+        metadata: {
+          dimensions: {
+            width: -10, // Negative value
+            height: 20,
+            depth: 5,
           },
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      } as any);
 
       expect(response.status).toBe(400);
-      const dimensionsError = response.data.errors.find((err: { path: string[] }) =>
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      const dimensionsError = data.errors.find((err: { path: string[] }) =>
         err.path.includes('dimensions')
       );
       expect(dimensionsError).toBeDefined();
     });
 
-    test('should return 400 for invalid query parameters', async ({ http }) => {
-      const response = await http.get('/products', {
-        params: {
-          page: -1, // Invalid (min 1)
-          limit: 200, // Invalid (max 100)
-        },
+    test('should return 400 for invalid query parameters', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerFindAll({
+        page: -1, // Invalid (min 1)
+        limit: 200, // Invalid (max 100)
       });
 
       expect(response.status).toBe(400);
-      expect(response.data.statusCode).toBe(400);
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      expect(data.statusCode).toBe(400);
     });
 
-    test('should return 400 for invalid sortBy in query', async ({ http }) => {
-      const response = await http.get('/products', {
-        params: {
-          sortBy: 'invalid-field', // Not in enum
-        },
+    test('should return 400 for invalid sortBy in query', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerFindAll({
+        sortBy: 'invalid-field' as any, // Not in enum
       });
 
       expect(response.status).toBe(400);
@@ -270,18 +204,10 @@ test.describe('Products Module', () => {
   });
 
   test.describe('Body Parser', () => {
-    test('should parse JSON body correctly in POST request', async ({
-      http,
-      authenticatedUser,
-    }) => {
-      const { cookies } = authenticatedUser;
+    test('should parse JSON body correctly in POST request', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const response = await api.productsControllerCreate(validProductData);
 
       expect(response.status).toBe(201);
       expect(response.data.product).toBeDefined();
@@ -289,16 +215,11 @@ test.describe('Products Module', () => {
       expect(response.data.product.price).toBe(99.99);
     });
 
-    test('should parse JSON body correctly in PUT request', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should parse JSON body correctly in PUT request', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // First create a product
-      const createResponse = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const createResponse = await api.productsControllerCreate(validProductData);
       const productId = createResponse.data.product.id;
 
       // Then update it
@@ -308,12 +229,7 @@ test.describe('Products Module', () => {
         price: 149.99,
       };
 
-      const response = await http.put(`/products/${productId}`, updateData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const response = await api.productsControllerUpdate(productId, updateData);
 
       expect(response.status).toBe(200);
       expect(response.data.product.name).toBe('Updated Product');
@@ -321,35 +237,18 @@ test.describe('Products Module', () => {
       expect(response.data.product.price).toBe(149.99);
     });
 
-    test('should parse JSON body correctly in PATCH request', async ({
-      http,
-      authenticatedUser,
-    }) => {
-      const { cookies } = authenticatedUser;
+    test('should parse JSON body correctly in PATCH request', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // First create a product
-      const createResponse = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const createResponse = await api.productsControllerCreate(validProductData);
       const productId = createResponse.data.product.id;
 
       // Then partially update it
-      const response = await http.patch(
-        `/products/${productId}`,
-        {
-          name: 'Patched Product',
-          price: 199.99,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerPatch(productId, {
+        name: 'Patched Product',
+        price: 199.99,
+      });
 
       expect(response.status).toBe(200);
       expect(response.data.product.name).toBe('Patched Product');
@@ -359,48 +258,42 @@ test.describe('Products Module', () => {
   });
 
   test.describe('Authorization', () => {
-    test('should return 401 for POST without authentication', async ({ http }) => {
-      const response = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    test('should return 401 for POST without authentication', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerCreate(validProductData);
 
       expect(response.status).toBe(401);
     });
 
-    test('should return 401 for PUT without authentication', async ({ http }) => {
-      const response = await http.put('/products/123', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    test('should return 401 for PUT without authentication', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerUpdate('123', validProductData);
 
       expect(response.status).toBe(401);
     });
 
-    test('should return 401 for PATCH without authentication', async ({ http }) => {
-      const response = await http.patch(
-        '/products/123',
-        { name: 'Updated' },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+    test('should return 401 for PATCH without authentication', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerPatch('123', { name: 'Updated' });
 
       expect(response.status).toBe(401);
     });
 
-    test('should return 401 for DELETE without authentication', async ({ http }) => {
-      const response = await http.delete('/products/123');
+    test('should return 401 for DELETE without authentication', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerRemove('123');
 
       expect(response.status).toBe(401);
     });
 
-    test('should allow GET without authentication', async ({ http }) => {
-      const response = await http.get('/products');
+    test('should allow GET without authentication', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerFindAll();
 
       expect(response.status).toBe(200);
       expect(response.data).toBeDefined();
@@ -408,163 +301,95 @@ test.describe('Products Module', () => {
       expect(response.data.pagination).toBeDefined();
     });
 
-    test('should allow GET by ID without authentication', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should allow GET by ID without authentication', async ({
+      useApi,
+      useAuthenticatedApi,
+    }) => {
+      const { api: authApi } = await useAuthenticatedApi();
 
       // First create a product
-      const createResponse = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const createResponse = await authApi.productsControllerCreate(validProductData);
       const productId = createResponse.data.product.id;
 
       // Then get it without authentication
-      const response = await http.get(`/products/${productId}`);
+      const api = await useApi();
+      const response = await api.productsControllerFindOne(productId);
 
       expect(response.status).toBe(200);
       expect(response.data.product).toBeDefined();
     });
 
-    test('should allow POST with authentication', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should allow POST with authentication', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const response = await api.productsControllerCreate(validProductData);
 
       expect(response.status).toBe(201);
     });
   });
 
   test.describe('Error Handling', () => {
-    test('should return 404 for non-existent product', async ({ http }) => {
-      const response = await http.get('/products/non-existent-id');
+    test('should return 404 for non-existent product', async ({ useApi }) => {
+      const api = await useApi();
+
+      const response = await api.productsControllerFindOne('non-existent-id');
 
       expect(response.status).toBe(404);
     });
 
-    test('should return 404 for updating non-existent product', async ({
-      http,
-      authenticatedUser,
-    }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 404 for updating non-existent product', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.put('/products/non-existent-id', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const response = await api.productsControllerUpdate('non-existent-id', validProductData);
 
       expect(response.status).toBe(404);
     });
 
-    test('should return 404 for deleting non-existent product', async ({
-      http,
-      authenticatedUser,
-    }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 404 for deleting non-existent product', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.delete('/products/non-existent-id', {
-        headers: {
-          Cookie: cookies,
-        },
-      });
+      const response = await api.productsControllerRemove('non-existent-id');
 
       expect(response.status).toBe(404);
     });
 
-    test('should return 400 for invalid data', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should return 400 for invalid data', async ({ useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
-      const response = await http.post(
-        '/products',
-        {
-          name: 'A', // Too short
-          price: -10, // Negative
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const response = await api.productsControllerCreate({
+        name: 'A', // Too short
+        price: -10, // Negative
+      } as any);
 
       expect(response.status).toBe(400);
-      expect(response.data.statusCode).toBe(400);
+      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
+      const data = response.data as any;
+      expect(data.statusCode).toBe(400);
     });
   });
 
   test.describe('Functionality', () => {
-    test('should return only current user products from /products/mine', async ({ http }) => {
+    test('should return only current user products from /products/mine', async ({
+      useAuthenticatedApi,
+    }) => {
       // Create two separate authenticated users
-      const user1 = {
-        email: `test-user1-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`,
-        name: 'User 1',
-        password: 'TestPassword123!',
-      };
-      const user2 = {
-        email: `test-user2-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`,
-        name: 'User 2',
-        password: 'TestPassword123!',
-      };
-
-      await http.post('/auth/sign-up/email', user1);
-      const signIn1Response = await http.post('/auth/sign-in/email', {
-        email: user1.email,
-        password: user1.password,
-      });
-      const user1Cookies = extractCookies(signIn1Response.headers) || '';
-
-      await http.post('/auth/sign-up/email', user2);
-      const signIn2Response = await http.post('/auth/sign-in/email', {
-        email: user2.email,
-        password: user2.password,
-      });
-      const user2Cookies = extractCookies(signIn2Response.headers) || '';
+      const { api: api1 } = await useAuthenticatedApi({ name: 'User 1' });
+      const { api: api2 } = await useAuthenticatedApi({ name: 'User 2' });
 
       // User 1 creates a product
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'User 1 Product',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: user1Cookies,
-          },
-        }
-      );
+      await api1.productsControllerCreate({
+        ...validProductData,
+        name: 'User 1 Product',
+      });
 
       // User 2 creates a product
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'User 2 Product',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: user2Cookies,
-          },
-        }
-      );
+      await api2.productsControllerCreate({
+        ...validProductData,
+        name: 'User 2 Product',
+      });
 
       // User 1 should only see their own product
-      const user1Response = await http.get('/products/mine', {
-        headers: {
-          Cookie: user1Cookies,
-        },
-      });
+      const user1Response = await api1.productsControllerGetMine();
 
       expect(user1Response.status).toBe(200);
       expect(user1Response.data.data).toBeDefined();
@@ -574,11 +399,7 @@ test.describe('Products Module', () => {
       expect(user1Response.data.pagination.total).toBe(1);
 
       // User 2 should only see their own product
-      const user2Response = await http.get('/products/mine', {
-        headers: {
-          Cookie: user2Cookies,
-        },
-      });
+      const user2Response = await api2.productsControllerGetMine();
 
       expect(user2Response.status).toBe(200);
       expect(user2Response.data.data.length).toBe(1);
@@ -587,95 +408,59 @@ test.describe('Products Module', () => {
     });
 
     test('should create, read, update, and delete a product', async ({
-      http,
-      authenticatedUser,
+      useApi,
+      useAuthenticatedApi,
     }) => {
-      const { cookies } = authenticatedUser;
+      const { api } = await useAuthenticatedApi();
 
       // Create
-      const createResponse = await http.post('/products', validProductData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
-      });
+      const createResponse = await api.productsControllerCreate(validProductData);
       expect(createResponse.status).toBe(201);
       const productId = createResponse.data.product.id;
 
       // Read
-      const getResponse = await http.get(`/products/${productId}`);
+      const unauthApi = await useApi();
+      const getResponse = await unauthApi.productsControllerFindOne(productId);
       expect(getResponse.status).toBe(200);
       expect(getResponse.data.product.id).toBe(productId);
 
       // Update
-      const updateResponse = await http.put(
-        `/products/${productId}`,
-        {
-          ...validProductData,
-          name: 'Updated Product',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      const updateResponse = await api.productsControllerUpdate(productId, {
+        ...validProductData,
+        name: 'Updated Product',
+      });
       expect(updateResponse.status).toBe(200);
       expect(updateResponse.data.product.name).toBe('Updated Product');
 
       // Delete
-      const deleteResponse = await http.delete(`/products/${productId}`, {
-        headers: {
-          Cookie: cookies,
-        },
-      });
+      const deleteResponse = await api.productsControllerRemove(productId);
       expect(deleteResponse.status).toBe(204);
 
       // Verify deleted
-      const getDeletedResponse = await http.get(`/products/${productId}`);
+      const getDeletedResponse = await unauthApi.productsControllerFindOne(productId);
       expect(getDeletedResponse.status).toBe(404);
     });
 
-    test('should filter products by category', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should filter products by category', async ({ useApi, useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // Create products with different categories
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Electronics Product',
-          category: 'electronics',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Electronics Product',
+        category: 'electronics',
+      });
 
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Clothing Product',
-          category: 'clothing',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Clothing Product',
+        category: 'clothing',
+      });
 
       // Filter by category
-      const response = await http.get('/products', {
-        params: {
-          category: 'electronics',
-        },
+      const unauthApi = await useApi();
+      const response = await unauthApi.productsControllerFindAll({
+        category: 'electronics',
       });
 
       expect(response.status).toBe(200);
@@ -684,45 +469,26 @@ test.describe('Products Module', () => {
       expect(response.data.data.every((p: any) => p.category === 'electronics')).toBe(true);
     });
 
-    test('should filter products by status', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should filter products by status', async ({ useApi, useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // Create products with different statuses
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Active Product',
-          status: 'active',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Active Product',
+        status: 'active',
+      });
 
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Draft Product',
-          status: 'draft',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Draft Product',
+        status: 'draft',
+      });
 
       // Filter by status
-      const response = await http.get('/products', {
-        params: {
-          status: 'active',
-        },
+      const unauthApi = await useApi();
+      const response = await unauthApi.productsControllerFindAll({
+        status: 'active',
       });
 
       expect(response.status).toBe(200);
@@ -731,46 +497,27 @@ test.describe('Products Module', () => {
       expect(response.data.data.every((p: any) => p.status === 'active')).toBe(true);
     });
 
-    test('should filter products by price range', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should filter products by price range', async ({ useApi, useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // Create products with different prices
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Cheap Product',
-          price: 10,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Cheap Product',
+        price: 10,
+      });
 
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Expensive Product',
-          price: 1000,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Expensive Product',
+        price: 1000,
+      });
 
       // Filter by price range
-      const response = await http.get('/products', {
-        params: {
-          minPrice: 50,
-          maxPrice: 500,
-        },
+      const unauthApi = await useApi();
+      const response = await unauthApi.productsControllerFindAll({
+        minPrice: 50,
+        maxPrice: 500,
       });
 
       expect(response.status).toBe(200);
@@ -779,43 +526,24 @@ test.describe('Products Module', () => {
       expect(response.data.data.every((p: any) => p.price >= 50 && p.price <= 500)).toBe(true);
     });
 
-    test('should search products by name', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should search products by name', async ({ useApi, useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // Create products
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Unique Search Term Product',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Unique Search Term Product',
+      });
 
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Another Product',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Another Product',
+      });
 
       // Search
-      const response = await http.get('/products', {
-        params: {
-          search: 'Unique Search Term',
-        },
+      const unauthApi = await useApi();
+      const response = await unauthApi.productsControllerFindAll({
+        search: 'Unique Search Term',
       });
 
       expect(response.status).toBe(200);
@@ -824,46 +552,27 @@ test.describe('Products Module', () => {
       expect(response.data.data.some((p: any) => p.name.includes('Unique Search Term'))).toBe(true);
     });
 
-    test('should sort products', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should sort products', async ({ useApi, useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // Create products with different prices
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Product A',
-          price: 100,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Product A',
+        price: 100,
+      });
 
-      await http.post(
-        '/products',
-        {
-          ...validProductData,
-          name: 'Product B',
-          price: 50,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: cookies,
-          },
-        }
-      );
+      await api.productsControllerCreate({
+        ...validProductData,
+        name: 'Product B',
+        price: 50,
+      });
 
       // Sort by price ascending
-      const response = await http.get('/products', {
-        params: {
-          sortBy: 'price',
-          sortOrder: 'asc',
-        },
+      const unauthApi = await useApi();
+      const response = await unauthApi.productsControllerFindAll({
+        sortBy: 'price',
+        sortOrder: 'asc',
       });
 
       expect(response.status).toBe(200);
@@ -873,32 +582,22 @@ test.describe('Products Module', () => {
       expect(prices).toEqual([...prices].sort((a, b) => a - b));
     });
 
-    test('should paginate products', async ({ http, authenticatedUser }) => {
-      const { cookies } = authenticatedUser;
+    test('should paginate products', async ({ useApi, useAuthenticatedApi }) => {
+      const { api } = await useAuthenticatedApi();
 
       // Create multiple products
       for (let i = 0; i < 5; i++) {
-        await http.post(
-          '/products',
-          {
-            ...validProductData,
-            name: `Product ${i}`,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Cookie: cookies,
-            },
-          }
-        );
+        await api.productsControllerCreate({
+          ...validProductData,
+          name: `Product ${i}`,
+        });
       }
 
       // Get first page
-      const page1Response = await http.get('/products', {
-        params: {
-          page: 1,
-          limit: 2,
-        },
+      const unauthApi = await useApi();
+      const page1Response = await unauthApi.productsControllerFindAll({
+        page: 1,
+        limit: 2,
       });
 
       expect(page1Response.status).toBe(200);
@@ -907,11 +606,9 @@ test.describe('Products Module', () => {
       expect(page1Response.data.pagination.limit).toBe(2);
 
       // Get second page
-      const page2Response = await http.get('/products', {
-        params: {
-          page: 2,
-          limit: 2,
-        },
+      const page2Response = await unauthApi.productsControllerFindAll({
+        page: 2,
+        limit: 2,
       });
 
       expect(page2Response.status).toBe(200);

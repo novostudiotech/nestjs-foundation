@@ -1,7 +1,8 @@
 import { expect, test } from './fixtures';
 
 test.describe('Database Connectivity', () => {
-  test('health check should include database status', async ({ api }) => {
+  test('health check should include database status', async ({ useApi }) => {
+    const api = await useApi();
     const { status, data: health } = await api.healthControllerCheck();
 
     expect(status).toBe(200);
@@ -19,7 +20,8 @@ test.describe('Database Connectivity', () => {
     expect(health.details?.service?.status || health.info?.service?.status).toBe('up');
   });
 
-  test('health check should return 200 even if database check fails', async ({ api }) => {
+  test('health check should return 200 even if database check fails', async ({ useApi }) => {
+    const api = await useApi();
     // This test verifies that the health endpoint is resilient
     // In a real scenario, if database is down, it might return 503
     // But for now, we just verify the endpoint responds

@@ -1,7 +1,8 @@
 import { expect, test } from './fixtures';
 
 test.describe('Health Check', () => {
-  test('should return 200 OK for health endpoint', async ({ api }) => {
+  test('should return 200 OK for health endpoint', async ({ useApi }) => {
+    const api = await useApi();
     const { status, data: health } = await api.healthControllerCheck();
 
     expect(status).toBe(200);
