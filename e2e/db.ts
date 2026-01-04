@@ -20,7 +20,13 @@ export interface DatabaseFixture {
 let testDataSource: DataSource | null = null;
 
 /**
- * Get or create test database connection
+ * Get a singleton TypeORM DataSource configured for end-to-end tests.
+ *
+ * Uses the URL from `TEST_DATABASE_URL` or `DATABASE_URL`, initializes a DataSource
+ * with the test configuration, and returns the already-initialized instance on subsequent calls.
+ *
+ * @returns An initialized TypeORM `DataSource` connected to the test database.
+ * @throws If neither `TEST_DATABASE_URL` nor `DATABASE_URL` is set in the environment.
  */
 export async function getTestDataSource(): Promise<DataSource> {
   if (testDataSource && testDataSource.isInitialized) {
@@ -43,7 +49,9 @@ export async function getTestDataSource(): Promise<DataSource> {
 }
 
 /**
- * Create database fixture with repositories and utilities
+ * Create a DatabaseFixture containing repositories for test tables and the initialized DataSource.
+ *
+ * @returns A DatabaseFixture with repositories for the 'user', 'session', 'account', and 'verification' tables and the initialized `DataSource`
  */
 export async function createDatabaseFixture(): Promise<DatabaseFixture> {
   const dataSource = await getTestDataSource();
@@ -61,8 +69,9 @@ export async function createDatabaseFixture(): Promise<DatabaseFixture> {
 }
 
 /**
- * Close test database connection
- * Should be called after all tests are done
+ * Close and destroy the singleton test DataSource if it is initialized.
+ *
+ * Should be called after all tests complete to release database resources.
  */
 export async function closeTestDataSource(): Promise<void> {
   if (testDataSource && testDataSource.isInitialized) {
