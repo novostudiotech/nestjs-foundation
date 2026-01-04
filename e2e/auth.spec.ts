@@ -105,4 +105,39 @@ test.describe('Better Auth', () => {
     expect(sessionResponse.status).toBe(200);
     expect(sessionResponse.data).toBeDefined();
   });
+
+  test('should create user, session, and account in database after registration', async ({
+    useAuthenticatedApi,
+    useDb,
+  }) => {
+    const { user } = await useAuthenticatedApi();
+    const db = useDb();
+
+    // Verify user exists in database
+    const dbUser = await db.userRepo.findOne({ where: { email: user.email } });
+    expect(dbUser).toBeDefined();
+    expect(dbUser?.email).toBe(user.email);
+    expect(dbUser?.name).toBe(user.name);
+    expect(dbUser?.emailVerified).toBe(false);
+
+    if (!dbUser) return; // Type guard for TypeScript
+
+    // Verify session exists for this user
+    const sessions = await db.sessionRepo.find({ where: { userId: dbUser.id } });
+    expect(sessions.length).toBeGreaterThan(0);
+
+    const session = sessions[0];
+    expect(session.token).toBeDefined();
+    expect(session.expiresAt).toBeDefined();
+    expect(session.expiresAt.getTime()).toBeGreaterThan(Date.now());
+
+    // Verify credential account exists for this user
+    const accounts = await db.accountRepo.find({ where: { userId: dbUser.id } });
+    expect(accounts.length).toBeGreaterThan(0);
+
+    const account = accounts[0];
+    expect(account.providerId).toBe('credential');
+    expect(account.password).toBeDefined(); // Should be hashed
+    expect(account.password).not.toBe(user.password); // Should NOT be plain text
+  });
 });
