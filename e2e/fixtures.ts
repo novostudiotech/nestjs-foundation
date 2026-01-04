@@ -1,60 +1,123 @@
 import { test as base, expect } from '@playwright/test';
-import axios, { AxiosInstance } from 'axios';
-import { getNestJSFoundationAPI } from './api';
-import { extractCookies } from './cookies.util';
+import { AxiosInstance } from 'axios';
+import { type ApiClient, createApiClient } from './api';
+import { createAxiosInstance } from './api/factory';
 
 /**
- * HTTP client fixture - wraps axios and returns both status and data
+ * Test user information
+ */
+export interface TestUser {
+  email: string;
+  name: string;
+  password: string;
+}
+
+/**
+ * Hook-style test fixtures inspired by React hooks
  */
 export const test = base.extend<{
-  http: AxiosInstance;
-  api: ReturnType<typeof getNestJSFoundationAPI>;
-  authenticatedUser: {
-    cookies: string;
-    testUser: {
-      email: string;
-      name: string;
-      password: string;
-    };
-  };
+  /**
+   * HTTP client hook - provides direct axios instance access
+   *
+   * @example
+   * ```typescript
+   * test('http test', async ({ useHttp }) => {
+   *   const http = useHttp();
+   *   const response = await http.get('/health');
+   *   expect(response.status).toBe(200);
+   * });
+   * ```
+   */
+  useHttp: () => AxiosInstance;
+
+  /**
+   * API client hook - provides typed API client access (unauthenticated)
+   *
+   * @example
+   * ```typescript
+   * test('api test', async ({ useApi }) => {
+   *   const api = await useApi();
+   *   const response = await api.getSession();
+   *   expect(response).toBeDefined();
+   * });
+   * ```
+   */
+  useApi: () => Promise<ApiClient>;
+
+  /**
+   * Authenticated API client hook - provides typed API client with user authentication
+   *
+   * @example
+   * ```typescript
+   * test('authenticated api test', async ({ useAuthenticatedApi }) => {
+   *   const { api, user } = await useAuthenticatedApi();
+   *   const response = await api.getSession();
+   *   expect(response.data?.user.email).toBe(user.email);
+   * });
+   *
+   * test('custom user test', async ({ useAuthenticatedApi }) => {
+   *   const { api, user } = await useAuthenticatedApi({ name: 'Custom User' });
+   *   const response = await api.getSession();
+   *   expect(user.name).toBe('Custom User');
+   * });
+   *
+   * test('multi-user test', async ({ useAuthenticatedApi }) => {
+   *   const { api: api1, user: user1 } = await useAuthenticatedApi({ name: 'User 1' });
+   *   const { api: api2, user: user2 } = await useAuthenticatedApi({ name: 'User 2' });
+   *   // api1 and api2 are authenticated as different users
+   * });
+   * ```
+   */
+  useAuthenticatedApi: (userData?: Partial<TestUser>) => Promise<{
+    api: ApiClient;
+    user: TestUser;
+  }>;
 }>({
-  http: async ({ baseURL }, use) => {
-    const client = axios.create({
-      baseURL,
-      validateStatus: () => true, // Don't throw on any status code
-      withCredentials: true, // Enable cookies
-    });
+  useHttp: async ({ baseURL }, use) => {
+    const hook = () => createAxiosInstance({ baseURL });
+    await use(hook);
+  },
 
-    await use(client);
+  useApi: async ({ baseURL }, use) => {
+    const hook = async (): Promise<ApiClient> => {
+      return createApiClient({ baseURL });
+    };
+    await use(hook);
   },
-  api: async ({ baseURL }, use) => {
-    if (baseURL) {
-      process.env.E2E_API_BASE_URL = baseURL;
-    }
-    await use(getNestJSFoundationAPI());
-  },
-  authenticatedUser: async ({ http }, use) => {
-    const testUser = {
-      email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`,
-      name: 'Test User',
-      password: 'TestPassword123!',
+
+  useAuthenticatedApi: async ({ baseURL }, use) => {
+    const hook = async (
+      userData?: Partial<TestUser>
+    ): Promise<{
+      api: ApiClient;
+      user: TestUser;
+    }> => {
+      const api = createApiClient({ baseURL });
+
+      const user: TestUser = {
+        email:
+          userData?.email ||
+          `test-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`,
+        name: userData?.name || 'Test User',
+        password: userData?.password || 'TestPassword123!',
+      };
+
+      // Register and sign in
+      await api.signUpWithEmailAndPassword({
+        email: user.email,
+        name: user.name,
+        password: user.password,
+      });
+
+      await api.signInEmail({
+        email: user.email,
+        password: user.password,
+      });
+
+      return { api, user };
     };
 
-    // Register and sign in
-    await http.post('/auth/sign-up/email', {
-      email: testUser.email,
-      name: testUser.name,
-      password: testUser.password,
-    });
-
-    const signInResponse = await http.post('/auth/sign-in/email', {
-      email: testUser.email,
-      password: testUser.password,
-    });
-
-    const cookies = extractCookies(signInResponse.headers);
-
-    await use({ cookies: cookies || '', testUser });
+    await use(hook);
   },
 });
 

@@ -20,6 +20,13 @@ import {
 } from '@thallesp/nestjs-better-auth';
 import { ValidationErrorDto } from '../app/dto/validation-error.dto';
 import { CreateProductDto } from './dto/create-product.dto';
+import {
+  CreateProductResponseDto,
+  GetProductResponseDto,
+  PaginatedProductsResponseDto,
+  PatchProductResponseDto,
+  UpdateProductResponseDto,
+} from './dto/product-response.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
@@ -35,6 +42,7 @@ export class ProductsController {
   @ApiResponse({
     status: 201,
     description: 'Product created successfully',
+    type: CreateProductResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -62,6 +70,7 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Returns paginated list of products',
+    type: PaginatedProductsResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -81,6 +90,7 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Returns paginated list of products created by the current user',
+    type: PaginatedProductsResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -102,6 +112,7 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Returns the product with ownership information if authenticated',
+    type: GetProductResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -126,6 +137,7 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Product updated successfully',
+    type: UpdateProductResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -160,6 +172,7 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Product partially updated successfully',
+    type: PatchProductResponseDto,
   })
   @ApiResponse({
     status: 400,
