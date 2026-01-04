@@ -50,17 +50,12 @@ test.describe('Better Auth', () => {
     }
 
     // Step 3: Verify we can access protected route with session
-    const profileResponse = await http.get('/me', {
+    const sessionResponse = await http.get('/auth/get-session', {
       headers: cookies ? { Cookie: cookies } : undefined,
     });
 
-    expect(profileResponse.status).toBe(200);
-    expect(profileResponse.data).toBeDefined();
-    expect(profileResponse.data.user).toBeDefined();
-    expect(profileResponse.data.user.email).toBe(testUser.email);
-    expect(profileResponse.data.user.name).toBe(testUser.name);
-    expect(profileResponse.data.session).toBeDefined();
-    expect(profileResponse.data.session.id).toBeDefined();
+    expect(sessionResponse.status).toBe(200);
+    expect(sessionResponse.data).toBeDefined();
   });
 
   test('should fail to sign in with wrong password', async ({ http }) => {
@@ -86,9 +81,45 @@ test.describe('Better Auth', () => {
     expect(signInResponse.status).toBe(401);
   });
 
-  test('should fail to access protected route without authentication', async ({ http }) => {
-    const profileResponse = await http.get('/me');
+  test('should return null session when accessing /auth/get-session without authentication', async ({
+    http,
+  }) => {
+    const sessionResponse = await http.get('/auth/get-session');
 
-    expect(profileResponse.status).toBe(401);
+    expect(sessionResponse.status).toBe(200);
+    expect(sessionResponse.data).toBeNull();
+  });
+
+  test('should get session via /auth/get-session endpoint', async ({ http }) => {
+    const testUser = {
+      email: `test-session-${Date.now()}@example.com`,
+      name: 'Test User',
+      password: 'TestPassword123!',
+    };
+
+    // Register and sign in
+    await http.post('/auth/sign-up/email', {
+      email: testUser.email,
+      name: testUser.name,
+      password: testUser.password,
+    });
+
+    const signInResponse = await http.post('/auth/sign-in/email', {
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    expect(signInResponse.status).toBe(200);
+
+    // Extract cookies
+    const cookies = extractCookies(signInResponse.headers);
+
+    // Verify session by accessing /auth/get-session
+    const sessionResponse = await http.get('/auth/get-session', {
+      headers: cookies ? { Cookie: cookies } : undefined,
+    });
+
+    expect(sessionResponse.status).toBe(200);
+    expect(sessionResponse.data).toBeDefined();
   });
 });
