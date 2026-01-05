@@ -1,0 +1,112 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: nestjs-foundation-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nestjs_foundation
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nestjs-network
+
+  # PostgreSQL Test Database
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: nestjs-foundation-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nestjs_foundation_test
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nestjs-network
+
+  # NestJS Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        nodeVersion: 24
+    container_name: nestjs-foundation-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/nestjs_foundation
+      LOG_LEVEL: info
+      # AUTH_SECRET should be provided via .env file or environment
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nestjs-network
+    healthcheck:
+      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development mode (optional, uncomment to use)
+  # app-dev:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: builder
+  #   container_name: nestjs-foundation-app-dev
+  #   restart: unless-stopped
+  #   ports:
+  #     - '3000:3000'
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3000
+  #     DATABASE_URL: postgresql://postgres:postgres@postgres:5432/nestjs_foundation
+  #     LOG_LEVEL: debug
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - nestjs-network
+  #   command: pnpm dev
+
+volumes:
+  postgres_data:
+    driver: local
+  postgres_test_data:
+    driver: local
+
+networks:
+  nestjs-network:
+    driver: bridge
