@@ -1,7 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import type { Request, Response } from 'express';
-import fastRedact from 'fast-redact';
 import { Logger } from 'nestjs-pino';
 import { ZodValidationException } from 'nestjs-zod';
 import { FOREIGN_KEY_VIOLATION, NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
@@ -9,46 +8,34 @@ import { QueryFailedError } from 'typeorm';
 import { sentryConfig } from '../../config';
 import type { ErrorDetails, ErrorResponse, ValidationError } from '../dto/error-response.dto';
 import { ErrorCode } from '../dto/error-response.dto';
+import { createRedactor } from './redact.util';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly sentryEnabled: boolean;
-  private readonly redactHeaders: ReturnType<typeof fastRedact>;
-  private readonly redactBody: ReturnType<typeof fastRedact>;
+  private readonly redactHeaders: ReturnType<typeof createRedactor>;
+  private readonly redactBody: ReturnType<typeof createRedactor>;
 
   constructor(private readonly logger: Logger) {
-    // Initialize fast-redact for secure sanitization
     // Headers redactor - removes sensitive authentication headers
-    // Note: Headers with hyphens must use bracket notation
-    this.redactHeaders = fastRedact({
-      paths: ['authorization', 'cookie', '["x-api-key"]', '["x-auth-token"]'],
-      serialize: false, // Return object, not JSON string
+    // Headers are flat (no nesting), so depth=0
+    // Use plainKeys for headers with special characters (hyphens) that require bracket notation
+    this.redactHeaders = createRedactor({
+      keys: ['authorization', 'cookie'],
+      plainKeys: ['["x-api-key"]', '["x-auth-token"]'],
       censor: '[REDACTED]',
-      strict: false, // Don't throw on primitives
+      serialize: false,
+      strict: false,
     });
 
-    // Body redactor - removes sensitive fields from request body
-    // Supports nested paths with wildcards for deep sanitization
-    this.redactBody = fastRedact({
-      paths: [
-        'password',
-        'token',
-        'secret',
-        'apiKey',
-        'api_key',
-        'creditCard',
-        'credit_card',
-        // Recursive wildcard patterns for nested objects (any depth)
-        '**.password',
-        '**.token',
-        '**.secret',
-        '**.apiKey',
-        '**.api_key',
-        '**.creditCard',
-        '**.credit_card',
-      ],
-      serialize: false,
+    // Body redactor - removes sensitive fields from request body at any nesting depth
+    // Uses createRedactor utility to automatically generate wildcard patterns
+    // for multiple nesting levels (default: 3 levels deep)
+    this.redactBody = createRedactor({
+      keys: ['password', 'token', 'secret', 'apiKey', 'api_key', 'creditCard', 'credit_card'],
+      depth: 3, // Redact keys up to 3 levels deep (e.g., body.data.user.password)
       censor: '[REDACTED]',
+      serialize: false,
       strict: false,
     });
 
@@ -252,7 +239,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     switch (dbError.code) {
       case UNIQUE_VIOLATION:
-        status = HttpStatus.CONFLICT;
+        status = HttpStatus.BAD_REQUEST;
         message = 'A record with this value already exists';
         code = ErrorCode.DATABASE_CONFLICT_ERROR;
         break;

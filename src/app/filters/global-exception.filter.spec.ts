@@ -193,10 +193,10 @@ describe('GlobalExceptionFilter', () => {
 
       filter.catch(dbError, mockArgumentsHost);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          status: HttpStatus.CONFLICT,
+          status: HttpStatus.BAD_REQUEST,
           code: ErrorCode.DATABASE_CONFLICT_ERROR,
           message: 'A record with this value already exists',
         })
@@ -263,7 +263,7 @@ describe('GlobalExceptionFilter', () => {
 
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          status: HttpStatus.CONFLICT,
+          status: HttpStatus.BAD_REQUEST,
           code: ErrorCode.DATABASE_CONFLICT_ERROR,
           message: 'A record with this value already exists',
         })
