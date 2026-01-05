@@ -52,6 +52,9 @@ importers:
       compression:
         specifier: ^1.7.5
         version: 1.8.1
+      fast-redact:
+        specifier: ^3.5.0
+        version: 3.5.0
       helmet:
         specifier: ^8.0.0
         version: 8.1.0
@@ -2713,6 +2716,10 @@ packages:
 
   fast-memoize@2.5.2:
     resolution: {integrity: sha512-Ue0LwpDYErFbmNnZSF0UH6eImUwDmogUO1jyE+JbN2gsQz/jICm1Ve7t9QT0rNSsfJt+Hs4/S3GnsDVjL4HVrw==}
+
+  fast-redact@3.5.0:
+    resolution: {integrity: sha512-dwsoQlS7h9hMeYUq1W++23NDcBLV4KqONnITDV9DjfS3q1SgDGVrBdvvTLUotWtPSD7asWDV9/CmsZPy8Hf70A==}
+    engines: {node: '>=6'}
 
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
@@ -8015,6 +8022,8 @@ snapshots:
   fast-json-stable-stringify@2.1.0: {}
 
   fast-memoize@2.5.2: {}
+
+  fast-redact@3.5.0: {}
 
   fast-safe-stringify@2.1.1: {}
 

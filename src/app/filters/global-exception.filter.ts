@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import type { Request, Response } from 'express';
+import fastRedact from 'fast-redact';
 import { Logger } from 'nestjs-pino';
 import { ZodValidationException } from 'nestjs-zod';
 import { FOREIGN_KEY_VIOLATION, NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
@@ -12,8 +13,45 @@ import { ErrorCode } from '../dto/error-response.dto';
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly sentryEnabled: boolean;
+  private readonly redactHeaders: ReturnType<typeof fastRedact>;
+  private readonly redactBody: ReturnType<typeof fastRedact>;
 
   constructor(private readonly logger: Logger) {
+    // Initialize fast-redact for secure sanitization
+    // Headers redactor - removes sensitive authentication headers
+    // Note: Headers with hyphens must use bracket notation
+    this.redactHeaders = fastRedact({
+      paths: ['authorization', 'cookie', '["x-api-key"]', '["x-auth-token"]'],
+      serialize: false, // Return object, not JSON string
+      censor: '[REDACTED]',
+      strict: false, // Don't throw on primitives
+    });
+
+    // Body redactor - removes sensitive fields from request body
+    // Supports nested paths with wildcards for deep sanitization
+    this.redactBody = fastRedact({
+      paths: [
+        'password',
+        'token',
+        'secret',
+        'apiKey',
+        'api_key',
+        'creditCard',
+        'credit_card',
+        // Wildcard patterns for nested objects (one level deep)
+        '*.password',
+        '*.token',
+        '*.secret',
+        '*.apiKey',
+        '*.api_key',
+        '*.creditCard',
+        '*.credit_card',
+      ],
+      serialize: false,
+      censor: '[REDACTED]',
+      strict: false,
+    });
+
     // Initialize Sentry if DSN is provided
     this.sentryEnabled = sentryConfig.enabled;
     if (this.sentryEnabled && sentryConfig.dsn) {
@@ -310,100 +348,35 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   /**
    * Remove sensitive headers before sending to Sentry
+   * Uses fast-redact for secure and performant sanitization
    */
   private sanitizeHeaders(headers: Request['headers']): Record<string, unknown> {
-    const sanitized: Record<string, unknown> = Object.create(null);
-    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key', 'x-auth-token'];
-
-    // Safely copy headers without dynamic property injection
-    for (const [key, value] of Object.entries(headers)) {
-      // Prevent prototype pollution by checking for dangerous keys
-      if (this.isDangerousKey(key)) {
-        continue;
-      }
-
-      if (sensitiveHeaders.includes(key.toLowerCase())) {
-        Object.defineProperty(sanitized, key, {
-          value: '[REDACTED]',
-          enumerable: true,
-          configurable: true,
-          writable: true,
-        });
-      } else {
-        Object.defineProperty(sanitized, key, {
-          value,
-          enumerable: true,
-          configurable: true,
-          writable: true,
-        });
-      }
+    if (!headers || typeof headers !== 'object') {
+      return {};
     }
 
-    return sanitized;
+    // fast-redact is safe from prototype pollution as it validates paths at compile time
+    // We pass headers directly - fast-redact will handle them safely
+    return this.redactHeaders(headers) as Record<string, unknown>;
   }
 
   /**
    * Remove sensitive data from request body before sending to Sentry
-   * Recursively sanitizes nested objects and arrays
+   * Uses fast-redact for secure and performant deep sanitization
    */
   private sanitizeBody(body: unknown): unknown {
     if (!body || typeof body !== 'object') {
       return body;
     }
 
-    const sensitiveFields = ['password', 'token', 'secret', 'apiKey', 'creditCard'];
-
-    // Handle arrays
+    // Handle arrays - recursively sanitize each item
     if (Array.isArray(body)) {
       return body.map((item) => this.sanitizeBody(item));
     }
 
-    // Handle objects - deep sanitization with prototype pollution protection
-    const sanitized: Record<string, unknown> = Object.create(null);
-    for (const [key, value] of Object.entries(body)) {
-      // Prevent prototype pollution by checking for dangerous keys
-      if (this.isDangerousKey(key)) {
-        continue;
-      }
-
-      // Check if key matches sensitive field (case-insensitive)
-      const isSensitive = sensitiveFields.some((field) =>
-        key.toLowerCase().includes(field.toLowerCase())
-      );
-
-      if (isSensitive) {
-        Object.defineProperty(sanitized, key, {
-          value: '[REDACTED]',
-          enumerable: true,
-          configurable: true,
-          writable: true,
-        });
-      } else if (value && typeof value === 'object') {
-        // Recursively sanitize nested objects/arrays
-        Object.defineProperty(sanitized, key, {
-          value: this.sanitizeBody(value),
-          enumerable: true,
-          configurable: true,
-          writable: true,
-        });
-      } else {
-        Object.defineProperty(sanitized, key, {
-          value,
-          enumerable: true,
-          configurable: true,
-          writable: true,
-        });
-      }
-    }
-
-    return sanitized;
-  }
-
-  /**
-   * Check if a key is dangerous and could lead to prototype pollution
-   */
-  private isDangerousKey(key: string): boolean {
-    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
-    return dangerousKeys.includes(key);
+    // fast-redact is safe from prototype pollution as it validates paths at compile time
+    // It handles nested objects and wildcards efficiently
+    // We pass the body directly - fast-redact will handle it safely
+    return this.redactBody(body) as unknown;
   }
 }

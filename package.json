@@ -41,6 +41,7 @@
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "better-auth": "^1.4.10",
     "compression": "^1.7.5",
+    "fast-redact": "^3.5.0",
     "helmet": "^8.0.0",
     "nestjs-pino": "^4.5.0",
     "nestjs-zod": "^5.0.1",
