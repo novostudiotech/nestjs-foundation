@@ -96,10 +96,21 @@ The application will be available at:
 
 ## Documentation
 
-- **[Zod Validation Guide](docs/zod-validation.md)** - Complete guide to type-safe validation with Zod
-- **[Playwright E2E Tests](docs/playwright-tests.md)** - End-to-end API testing with Playwright
-- **[Conventional Commits](docs/conventional-commits.md)** - Commit message format and standards
-- **[Monitoring & Health Checks](docs/monitoring.md)** - Health checks and Prometheus metrics setup
+### Getting Started
+- **[Setup Guide](SETUP.md)** - Quick start and installation
+- **[Docker Setup](docs/docker.md)** - Docker and Docker Compose guide
+
+### Development
+- **[Zod Validation](docs/zod-validation.md)** - Type-safe request validation
+- **[E2E Testing](docs/e2e-tests.md)** - End-to-end API testing
+- **[E2E Fixtures](docs/e2e-fixtures.md)** - Test data management
+- **[Swagger](docs/swagger.md)** - API documentation
+- **[Working with Patches](docs/working-with-patches.md)** - Package patches
+
+### Operations
+- **[Error Tracking](docs/error-tracking.md)** - Sentry integration
+- **[Monitoring](docs/monitoring.md)** - Health checks and metrics
+- **[Conventional Commits](docs/conventional-commits.md)** - Commit standards
 
 ---
 

@@ -1,432 +1,186 @@
 # Setup Guide
 
-This guide will help you set up and run the NestJS Foundation project locally.
-
-## Table of Contents
-
-- [Prerequisites](#prerequisites)
-- [Initial Setup](#initial-setup)
-- [Environment Configuration](#environment-configuration)
-- [Database Setup](#database-setup)
-- [Running the Application](#running-the-application)
-- [Running Tests](#running-tests)
-- [Docker Setup](#docker-setup)
-- [Common Issues](#common-issues)
-- [Additional Documentation](#additional-documentation)
+Quick start guide to get NestJS Foundation running locally.
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
+- **Node.js** 24.x ([nvm](https://github.com/nvm-sh/nvm) recommended)
+- **pnpm** 9.x or later (`corepack enable`)
+- **PostgreSQL** 16.x or later (or use [Docker](docs/docker.md))
 
-- **Node.js**: Version 24.x (use `.nvmrc` for automatic version management)
-  - Install via [nvm](https://github.com/nvm-sh/nvm): `nvm install` (reads from `.nvmrc`)
-  - Or download from [nodejs.org](https://nodejs.org/)
-- **pnpm**: Version 9.x or later
-  - Install via corepack: `corepack enable && corepack prepare pnpm@latest --activate`
-  - Or install globally: `npm install -g pnpm`
-- **PostgreSQL**: Version 16.x or later
-  - Install via [Homebrew](https://brew.sh/) (macOS): `brew install postgresql@16`
-  - Or use Docker (see [Docker Setup](#docker-setup))
-- **Docker** (optional): For containerized development
-  - Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+## Quick Start
 
-## Initial Setup
-
-1. **Clone the repository**
+### 1. Install Dependencies
 
 ```bash
-git clone <repository-url>
-cd nestjs-foundation
-```
+# Use correct Node version
+nvm install && nvm use
 
-2. **Install Node.js version**
-
-If using nvm:
-
-```bash
-nvm install
-nvm use
-```
-
-3. **Install dependencies**
-
-```bash
+# Install dependencies
 pnpm install
 ```
 
-This will install all dependencies and apply any necessary patches.
-
-## Environment Configuration
-
-1. **Create environment file**
-
-Copy the example environment file:
+### 2. Configure Environment
 
 ```bash
+# Copy example env file
 cp .env.example .env
-```
 
-2. **Configure environment variables**
-
-Edit `.env` and set the following required variables:
-
-```bash
-# Application
-NODE_ENV=development
-PORT=3000
-LOG_LEVEL=debug
-
-# Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation
-
-# Test Database (for E2E tests)
-TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test
-
-# Authentication
-AUTH_SECRET=<generate-a-secure-secret-here>
-
-# CORS (optional)
-# CORS_ORIGIN=https://example.com,https://app.example.com
-```
-
-**Generate a secure AUTH_SECRET:**
-
-```bash
+# Generate AUTH_SECRET
 openssl rand -base64 32
 ```
 
-## Database Setup
-
-### Option 1: Local PostgreSQL
-
-1. **Start PostgreSQL service**
+Edit `.env` and set required variables:
 
 ```bash
-# macOS (Homebrew)
-brew services start postgresql@16
-
-# Linux (systemd)
-sudo systemctl start postgresql
+NODE_ENV=development
+PORT=3000
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test
+AUTH_SECRET=<paste-generated-secret-here>
 ```
 
-2. **Create databases**
+### 3. Setup Database
 
 ```bash
-# Connect to PostgreSQL
-psql postgres
-
 # Create databases
-CREATE DATABASE nestjs_foundation;
-CREATE DATABASE nestjs_foundation_test;
+createdb nestjs_foundation
+createdb nestjs_foundation_test
 
-# Exit
-\q
-```
-
-3. **Run migrations**
-
-```bash
+# Run migrations
 pnpm migration:run
 ```
 
-### Option 2: Docker PostgreSQL
-
-See [Docker Setup](#docker-setup) section below.
-
-## Running the Application
-
-### Development Mode
-
-Start the application with hot-reload:
+### 4. Start Application
 
 ```bash
 pnpm dev
 ```
 
-The application will be available at:
+Application available at:
 - **API**: http://localhost:3000
-- **Swagger Docs**: http://localhost:3000/docs
-- **Health Check**: http://localhost:3000/health
-- **Metrics**: http://localhost:3000/metrics
+- **Swagger**: http://localhost:3000/docs
+- **Health**: http://localhost:3000/health
 
-### Production Mode
+## Optional: Error Tracking
 
-Build and run the production version:
-
-```bash
-# Build the application
-pnpm build
-
-# Start production server
-pnpm start:prod
-```
-
-### Debug Mode
-
-Run with Node.js debugger attached:
+Enable [Sentry](docs/error-tracking.md) for production error monitoring:
 
 ```bash
-pnpm debug
+# Add to .env
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_ENVIRONMENT=development
 ```
 
-Then attach your IDE's debugger to the Node.js process.
+See [Error Tracking Guide](docs/error-tracking.md) for details.
 
-## Running Tests
+## Optional: Docker
 
-### Unit Tests
-
-Run Jest unit tests:
-
-```bash
-# Run all unit tests
-pnpm test:unit
-
-# Run with watch mode
-pnpm test:unit:watch
-
-# Run with coverage
-pnpm test:unit:coverage
-```
-
-### End-to-End (E2E) Tests
-
-E2E tests use Playwright and require a test database.
-
-1. **Ensure test database is configured**
-
-Make sure `TEST_DATABASE_URL` is set in your `.env` or `.env.test` file.
-
-2. **Run E2E tests**
-
-```bash
-# Run all E2E tests
-pnpm test:e2e
-
-# Run with debug mode
-pnpm test:e2e:debug
-
-# View test report
-pnpm test:e2e:report
-```
-
-3. **Generate API client** (if API changes)
-
-```bash
-pnpm test:e2e:generate-api
-```
-
-For more details, see:
-- [E2E Testing Guide](docs/e2e-tests.md)
-- [E2E Fixtures Guide](docs/e2e-fixtures.md)
-
-## Docker Setup
-
-### Using Docker Compose
-
-The project includes a `docker-compose.yml` file for easy containerized setup.
-
-1. **Start all services**
+Use Docker for easy setup without local PostgreSQL:
 
 ```bash
 docker compose up -d
 ```
 
-This will start:
-- PostgreSQL database (port 5432)
-- PostgreSQL test database (port 5433)
-- NestJS application (port 3000)
+See [Docker Guide](docs/docker.md) for details.
 
-2. **View logs**
+## Running Tests
 
 ```bash
-# All services
-docker compose logs -f
+# Unit tests
+pnpm test:unit
 
-# Specific service
-docker compose logs -f app
-```
+# E2E tests
+pnpm test:e2e
 
-3. **Stop services**
-
-```bash
-docker compose down
-```
-
-4. **Stop and remove volumes**
-
-```bash
-docker compose down -v
-```
-
-### Building Docker Image
-
-Build the production Docker image:
-
-```bash
-docker build -t nestjs-foundation:latest .
-```
-
-Run the container:
-
-```bash
-docker run -p 3000:3000 \
-  -e DATABASE_URL=postgresql://user:pass@host:5432/db \
-  -e AUTH_SECRET=your-secret \
-  nestjs-foundation:latest
+# Lint
+pnpm lint
 ```
 
 ## Database Migrations
 
-### Create a new migration
-
 ```bash
+# Create migration
 pnpm migration:create src/migrations/MigrationName
-```
 
-### Generate migration from entity changes
-
-```bash
+# Generate from entity changes
 pnpm migration:generate src/migrations/MigrationName
-```
 
-### Run pending migrations
-
-```bash
+# Run migrations
 pnpm migration:run
-```
 
-### Revert last migration
-
-```bash
+# Revert last migration
 pnpm migration:revert
-```
-
-### Show migration status
-
-```bash
-pnpm migration:show
 ```
 
 ## Common Issues
 
 ### Port Already in Use
 
-If port 3000 is already in use:
-
-1. Change the `PORT` in your `.env` file
-2. Or kill the process using the port:
-
 ```bash
-# Find process
-lsof -ti:3000
-
-# Kill process
+# Change PORT in .env or kill process
 kill -9 $(lsof -ti:3000)
 ```
 
-### Database Connection Issues
-
-**Error: `ECONNREFUSED` or `Connection refused`**
-
-- Ensure PostgreSQL is running: `brew services list` (macOS) or `systemctl status postgresql` (Linux)
-- Check your `DATABASE_URL` in `.env`
-- Verify PostgreSQL is listening on the correct port: `psql -h localhost -p 5432 -U postgres`
-
-**Error: `database "nestjs_foundation" does not exist`**
-
-- Create the database: `createdb nestjs_foundation`
-- Or use psql: `psql postgres -c "CREATE DATABASE nestjs_foundation;"`
-
-### Migration Issues
-
-**Error: `No migrations pending`**
-
-- Migrations are already applied. Check status: `pnpm migration:show`
-
-**Error: `Migration failed`**
-
-- Revert the migration: `pnpm migration:revert`
-- Fix the migration file
-- Run again: `pnpm migration:run`
-
-### pnpm Installation Issues
-
-**Error: `Cannot find module` after install**
-
-- Clear pnpm cache: `pnpm store prune`
-- Remove node_modules: `rm -rf node_modules`
-- Reinstall: `pnpm install`
-
-### Patch Package Issues
-
-If patches fail to apply:
+### Database Connection Failed
 
 ```bash
-# Reinstall with patches
-pnpm install
+# Check PostgreSQL is running
+brew services list  # macOS
+systemctl status postgresql  # Linux
 
-# Or manually apply patches
-pnpm patch-package
+# Verify connection
+psql -h localhost -p 5432 -U postgres
 ```
 
-## Additional Documentation
+### Database Does Not Exist
 
-- [Conventional Commits Guide](docs/conventional-commits.md)
-- [E2E Testing Guide](docs/e2e-tests.md)
-- [E2E Fixtures Guide](docs/e2e-fixtures.md)
-- [Monitoring Guide](docs/monitoring.md)
-- [Swagger Documentation](docs/swagger.md)
-- [Zod Validation Guide](docs/zod-validation.md)
-- [Working with Patches](docs/working-with-patches.md)
+```bash
+createdb nestjs_foundation
+createdb nestjs_foundation_test
+```
+
+## Documentation
+
+- [Conventional Commits](docs/conventional-commits.md) - Git commit guidelines
+- [Docker Setup](docs/docker.md) - Docker and Docker Compose
+- [E2E Testing](docs/e2e-tests.md) - End-to-end testing guide
+- [E2E Fixtures](docs/e2e-fixtures.md) - Test data management
+- [Error Tracking](docs/error-tracking.md) - Sentry integration
+- [Monitoring](docs/monitoring.md) - Health checks and metrics
+- [Swagger](docs/swagger.md) - API documentation
+- [Zod Validation](docs/zod-validation.md) - Request validation
+- [Working with Patches](docs/working-with-patches.md) - Package patches
 
 ## Development Workflow
 
-1. **Create a feature branch**
-
 ```bash
+# 1. Create feature branch
 git checkout -b feature/my-feature
-```
 
-2. **Make changes and commit**
-
-Follow [Conventional Commits](docs/conventional-commits.md):
-
-```bash
+# 2. Make changes and commit (use conventional commits)
 git add .
 git commit -m "feat: add new feature"
-```
 
-3. **Run linter**
-
-```bash
+# 3. Run tests and lint
 pnpm lint
-```
-
-4. **Run tests**
-
-```bash
 pnpm test:unit
 pnpm test:e2e
-```
 
-5. **Push and create PR**
-
-```bash
+# 4. Push and create PR
 git push origin feature/my-feature
 ```
 
 ## Getting Help
 
-If you encounter issues not covered in this guide:
-
-1. Check the [Common Issues](#common-issues) section
-2. Review the [Additional Documentation](#additional-documentation)
-3. Search existing GitHub issues
-4. Create a new issue with detailed information
+1. Check [Common Issues](#common-issues)
+2. Review [Documentation](#documentation)
+3. Search GitHub issues
+4. Create new issue with details
 
 ## Next Steps
 
-- Read the [API Documentation](http://localhost:3000/docs) (after starting the app)
-- Explore the [E2E Testing Guide](docs/e2e-tests.md)
-- Review the [Monitoring Guide](docs/monitoring.md)
-- Check out the [Swagger Documentation](docs/swagger.md)
+- Explore [API Documentation](http://localhost:3000/docs)
+- Read [E2E Testing Guide](docs/e2e-tests.md)
+- Setup [Error Tracking](docs/error-tracking.md) for production
+- Configure [Monitoring](docs/monitoring.md) for your deployment
