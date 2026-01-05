@@ -219,6 +219,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     };
 
     // Build details from PostgreSQL error
+    // TODO: Consider using centralized config for environment checks instead of direct process.env access
+    // For consistency with other parts of the codebase (e.g., sentryConfig), add an isProduction
+    // or environment property to the config module and use it here
     const isProduction = process.env.NODE_ENV === 'production';
     const details: ErrorDetails = {};
 
@@ -227,6 +230,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if (dbError.table) details.table = dbError.table;
     }
 
+    // TODO: Consider whether constraint names should be filtered in production
+    // Constraint names like "users_email_key" or "orders_user_id_fkey" do reveal table and column names,
+    // which constitutes minor information disclosure about database schema. This is currently an
+    // intentional design decision for better UX (field highlighting) and debugging, but should be
+    // reviewed if stricter security requirements are needed
+    //
+    // ---
+    //
     // Column and constraint are safe to expose even in production:
     // - Column: needed for UI field highlighting (e.g., "email field has error")
     // - Constraint: provides useful context (e.g., "users_email_key", "orders_user_id_fkey")
@@ -310,6 +321,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         });
 
         // Add user context if available (from auth middleware)
+        // TODO: Consider simplifying the user type assertion
+        // The double type assertion is safe due to the user?.id guard, but could be cleaner.
+        // Options: 1) Define a RequestWithUser interface, or 2) Extract to a helper method
         const user = (request as unknown as Record<string, unknown>).user as
           | { id: string; email?: string }
           | undefined;
