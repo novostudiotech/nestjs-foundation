@@ -18,7 +18,7 @@ import {
   Session,
   type UserSession,
 } from '@thallesp/nestjs-better-auth';
-import { ValidationErrorDto } from '../app/dto/validation-error.dto';
+import { ErrorResponseDto } from '../app/dto/error-response.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import {
   CreateProductResponseDto,
@@ -47,7 +47,7 @@ export class ProductsController {
   @ApiResponse({
     status: 400,
     description: 'Validation failed',
-    type: ValidationErrorDto,
+    type: ErrorResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -75,7 +75,7 @@ export class ProductsController {
   @ApiResponse({
     status: 400,
     description: 'Invalid query parameters',
-    type: ValidationErrorDto,
+    type: ErrorResponseDto,
   })
   findAll(@Query() query: QueryProductDto) {
     return this.productsService.findAll(query);
@@ -95,7 +95,7 @@ export class ProductsController {
   @ApiResponse({
     status: 400,
     description: 'Invalid query parameters',
-    type: ValidationErrorDto,
+    type: ErrorResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getMine(@Session() session: UserSession, @Query() query: QueryProductDto) {
@@ -142,7 +142,7 @@ export class ProductsController {
   @ApiResponse({
     status: 400,
     description: 'Validation failed',
-    type: ValidationErrorDto,
+    type: ErrorResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -177,7 +177,7 @@ export class ProductsController {
   @ApiResponse({
     status: 400,
     description: 'Validation failed',
-    type: ValidationErrorDto,
+    type: ErrorResponseDto,
   })
   @ApiResponse({
     status: 401,

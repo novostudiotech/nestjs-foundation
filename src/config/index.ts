@@ -2,23 +2,28 @@ import { z } from 'zod';
 
 export * from './app.config';
 export * from './db.config';
+export * from './sentry.config';
 
 /**
  * Unified environment validation schema
  * Validates all required environment variables at application startup
  */
 const envSchema = z.object({
-  // App config
+  // App
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
   CORS_ORIGIN: z.string().optional(),
 
-  // Database config
+  // Database
   DATABASE_URL: z.url(),
 
-  // Auth config
+  // Auth
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters long'),
+
+  // Sentry (optional)
+  SENTRY_DSN: z.url().optional(),
+  SENTRY_ENVIRONMENT: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

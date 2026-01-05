@@ -56,10 +56,12 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      expect(data.statusCode).toBe(400);
+      expect(data.status).toBe(400);
       expect(data.message).toBe('Validation failed');
-      expect(Array.isArray(data.errors)).toBe(true);
-      const nameError = data.errors.find((err: { path: string[] }) => err.path.includes('name'));
+      expect(Array.isArray(data.validation)).toBe(true);
+      const nameError = data.validation.find((err: { field: string }) =>
+        err.field.includes('name')
+      );
       expect(nameError).toBeDefined();
     });
 
@@ -75,7 +77,9 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      const nameError = data.errors.find((err: { path: string[] }) => err.path.includes('name'));
+      const nameError = data.validation.find((err: { field: string }) =>
+        err.field.includes('name')
+      );
       expect(nameError).toBeDefined();
     });
 
@@ -91,7 +95,9 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      const priceError = data.errors.find((err: { path: string[] }) => err.path.includes('price'));
+      const priceError = data.validation.find((err: { field: string }) =>
+        err.field.includes('price')
+      );
       expect(priceError).toBeDefined();
     });
 
@@ -109,8 +115,8 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      const categoryError = data.errors.find((err: { path: string[] }) =>
-        err.path.includes('category')
+      const categoryError = data.validation.find((err: { field: string }) =>
+        err.field.includes('category')
       );
       expect(categoryError).toBeDefined();
     });
@@ -128,8 +134,8 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      const imageUrlError = data.errors.find((err: { path: string[] }) =>
-        err.path.includes('imageUrl')
+      const imageUrlError = data.validation.find((err: { field: string }) =>
+        err.field.includes('imageUrl')
       );
       expect(imageUrlError).toBeDefined();
     });
@@ -147,7 +153,9 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      const tagsError = data.errors.find((err: { path: string[] }) => err.path.includes('tags'));
+      const tagsError = data.validation.find((err: { field: string }) =>
+        err.field.includes('tags')
+      );
       expect(tagsError).toBeDefined();
     });
 
@@ -172,8 +180,8 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      const dimensionsError = data.errors.find((err: { path: string[] }) =>
-        err.path.includes('dimensions')
+      const dimensionsError = data.validation.find((err: { field: string }) =>
+        err.field.includes('dimensions')
       );
       expect(dimensionsError).toBeDefined();
     });
@@ -189,7 +197,7 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      expect(data.statusCode).toBe(400);
+      expect(data.status).toBe(400);
     });
 
     test('should return 400 for invalid sortBy in query', async ({ useApi }) => {
@@ -364,7 +372,7 @@ test.describe('Products Module', () => {
       expect(response.status).toBe(400);
       // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
-      expect(data.statusCode).toBe(400);
+      expect(data.status).toBe(400);
     });
   });
 
