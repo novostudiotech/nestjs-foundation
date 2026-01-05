@@ -102,13 +102,13 @@ The application will be available at:
 
 ### Development
 - **[Zod Validation](docs/zod-validation.md)** - Type-safe request validation
+- **[Error Handling](docs/error-handling.md)** - Error codes, i18n, and Sentry tracking
 - **[E2E Testing](docs/e2e-tests.md)** - End-to-end API testing
 - **[E2E Fixtures](docs/e2e-fixtures.md)** - Test data management
 - **[Swagger](docs/swagger.md)** - API documentation
 - **[Working with Patches](docs/working-with-patches.md)** - Package patches
 
 ### Operations
-- **[Error Tracking](docs/error-tracking.md)** - Sentry integration
 - **[Monitoring](docs/monitoring.md)** - Health checks and metrics
 - **[Conventional Commits](docs/conventional-commits.md)** - Commit standards
 

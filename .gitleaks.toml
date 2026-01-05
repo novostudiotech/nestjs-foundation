@@ -1,0 +1,7 @@
+# Gitleaks configuration
+# Exclude markdown files from secret scanning
+
+[allowlist]
+paths = [
+  '''.*\.md$''',
+]

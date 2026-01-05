@@ -8,8 +8,11 @@ export const sentryConfigSchema = z.object({
 
 export type SentryConfig = z.infer<typeof sentryConfigSchema>;
 
+// Normalize empty string to undefined for "leave empty to disable" workflow
+const dsn = process.env.SENTRY_DSN?.trim() || undefined;
+
 export const sentryConfig = sentryConfigSchema.parse({
-  dsn: process.env.SENTRY_DSN,
+  dsn,
   environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV,
-  enabled: Boolean(process.env.SENTRY_DSN),
+  enabled: Boolean(dsn),
 });

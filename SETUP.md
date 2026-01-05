@@ -64,7 +64,7 @@ Application available at:
 
 ## Optional: Error Tracking
 
-Enable [Sentry](docs/error-tracking.md) for production error monitoring:
+Enable [Sentry](docs/error-handling.md#error-tracking-with-sentry) for production error monitoring:
 
 ```bash
 # Add to .env
@@ -72,7 +72,7 @@ SENTRY_DSN=https://your-dsn@sentry.io/project-id
 SENTRY_ENVIRONMENT=development
 ```
 
-See [Error Tracking Guide](docs/error-tracking.md) for details.
+See [Error Handling Guide](docs/error-handling.md) for details.
 
 ## Optional: Docker
 
@@ -146,7 +146,7 @@ createdb nestjs_foundation_test
 - [Docker Setup](docs/docker.md) - Docker and Docker Compose
 - [E2E Testing](docs/e2e-tests.md) - End-to-end testing guide
 - [E2E Fixtures](docs/e2e-fixtures.md) - Test data management
-- [Error Tracking](docs/error-tracking.md) - Sentry integration
+- [Error Handling](docs/error-handling.md) - Error codes, i18n, and Sentry tracking
 - [Monitoring](docs/monitoring.md) - Health checks and metrics
 - [Swagger](docs/swagger.md) - API documentation
 - [Zod Validation](docs/zod-validation.md) - Request validation
@@ -182,5 +182,5 @@ git push origin feature/my-feature
 
 - Explore [API Documentation](http://localhost:3000/docs)
 - Read [E2E Testing Guide](docs/e2e-tests.md)
-- Setup [Error Tracking](docs/error-tracking.md) for production
+- Setup [Error Handling](docs/error-handling.md) for production
 - Configure [Monitoring](docs/monitoring.md) for your deployment
