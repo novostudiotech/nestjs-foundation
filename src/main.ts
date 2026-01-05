@@ -10,7 +10,6 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { GlobalExceptionFilter } from './app/filters/global-exception.filter';
 import { AppModule } from './app.module';
 import { generateBetterAuthOpenAPISchema } from './auth/openapi';
-import { appConfig } from './config';
 import { mergeOpenAPIDocuments } from './swagger/openapi-merge.util';
 
 async function bootstrap() {
@@ -26,19 +25,35 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   // Apply security headers with Helmet
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"], // Required for Swagger UI
-          scriptSrc: ["'self'", "'unsafe-inline'"], // Required for Swagger UI
-          imgSrc: ["'self'", 'data:', 'https:'], // Required for Swagger UI
+  // Use strict CSP globally, relax only for Swagger UI at /docs
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/docs')) {
+      // Relaxed CSP for Swagger UI
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+          },
         },
-      },
-      crossOriginEmbedderPolicy: false, // Required for Swagger UI
-    })
-  );
+        crossOriginEmbedderPolicy: false,
+      })(req, res, next);
+    } else {
+      // Strict CSP for the rest of the API
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:'],
+          },
+        },
+      })(req, res, next);
+    }
+  });
 
   // Apply compression middleware
   app.use(
@@ -51,8 +66,21 @@ async function bootstrap() {
   // Get config service for CORS configuration
   const configService = app.get(ConfigService);
 
-  // Setup CORS
-  const corsOrigin = configService.get('corsOrigin') ?? appConfig.corsOrigin;
+  // Setup CORS - use validated env variable
+  const corsOriginEnv = configService.get<string>('CORS_ORIGIN');
+  let corsOrigin: string | boolean | string[];
+
+  if (!corsOriginEnv) {
+    corsOrigin = true; // Allow all origins by default
+  } else if (corsOriginEnv === 'true') {
+    corsOrigin = true;
+  } else if (corsOriginEnv === 'false') {
+    corsOrigin = false;
+  } else {
+    // Support comma-separated origins
+    corsOrigin = corsOriginEnv.split(',').map((origin) => origin.trim());
+  }
+
   app.enableCors({
     origin: corsOrigin,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -79,27 +107,36 @@ async function bootstrap() {
   if (betterAuthSchema) mergeOpenAPIDocuments(document, betterAuthSchema);
   SwaggerModule.setup('docs', app, cleanupOpenApiDoc(document));
 
-  const port = configService.get<number>('PORT') ?? appConfig.port;
+  const port = configService.get<number>('PORT') ?? 3000;
 
   await app.listen(port);
 
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`Swagger documentation available at: http://localhost:${port}/docs`);
 
-  // Graceful shutdown handling
-  const gracefulShutdown = async (signal: string) => {
-    logger.log(`Received ${signal}, starting graceful shutdown...`);
-    try {
-      await app.close();
-      logger.log('Application closed successfully');
-      process.exit(0);
-    } catch (error) {
-      logger.error('Error during shutdown:', error);
-      process.exit(1);
-    }
-  };
-
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  return { app, logger };
 }
-bootstrap();
+
+// Bootstrap and setup signal handlers
+bootstrap()
+  .then(({ app, logger }) => {
+    // Graceful shutdown handling
+    const gracefulShutdown = async (signal: string) => {
+      logger.log(`Received ${signal}, starting graceful shutdown...`);
+      try {
+        await app.close();
+        logger.log('Application closed successfully');
+        process.exit(0);
+      } catch (error) {
+        logger.error('Error during shutdown:', error);
+        process.exit(1);
+      }
+    };
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  })
+  .catch((error) => {
+    console.error('Failed to start application:', error);
+    process.exit(1);
+  });

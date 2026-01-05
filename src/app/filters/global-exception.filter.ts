@@ -11,6 +11,7 @@ interface ErrorResponse {
   timestamp: string;
   path: string;
   requestId?: string;
+  errors?: unknown[]; // For Zod validation errors
 }
 
 @Catch()
@@ -52,6 +53,20 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const path = request.url;
     const requestId = request.headers['x-request-id'] as string | undefined;
 
+    // Handle Zod validation exceptions (must be before HttpException as it extends it)
+    if (exception instanceof ZodValidationException) {
+      const exceptionResponse = exception.getResponse() as Record<string, unknown>;
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: (exceptionResponse.message as string) ?? exception.message,
+        error: (exceptionResponse.error as string) ?? 'Validation Error',
+        errors: exceptionResponse.errors as unknown[],
+        timestamp,
+        path,
+        requestId,
+      };
+    }
+
     // Handle NestJS HTTP exceptions
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
@@ -76,18 +91,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         statusCode: status,
         message,
         error,
-        timestamp,
-        path,
-        requestId,
-      };
-    }
-
-    // Handle Zod validation exceptions
-    if (exception instanceof ZodValidationException) {
-      return {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: exception.message,
-        error: 'Validation Error',
         timestamp,
         path,
         requestId,
@@ -140,10 +143,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     // Handle generic Error instances
+    // Return generic message to avoid leaking internal details (SQL, file paths, etc.)
     if (exception instanceof Error) {
       return {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: exception.message || 'Internal server error',
+        message: 'Internal server error',
         error: 'Internal Server Error',
         timestamp,
         path,
@@ -154,7 +158,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Handle unknown errors
     return {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'An unexpected error occurred',
+      message: 'Internal server error',
       error: 'Internal Server Error',
       timestamp,
       path,
