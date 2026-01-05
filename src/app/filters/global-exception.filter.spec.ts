@@ -535,9 +535,9 @@ describe('GlobalExceptionFilter', () => {
         ...mockRequest,
         headers: {
           'x-request-id': 'test-id',
-          __proto__: 'malicious',
-          constructor: 'malicious',
-          prototype: 'malicious',
+          __proto__: { malicious: true },
+          constructor: { malicious: true },
+          prototype: { malicious: true },
         },
       };
 
