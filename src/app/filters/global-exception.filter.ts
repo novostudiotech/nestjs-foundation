@@ -218,17 +218,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       schema?: string;
     };
 
-    // Build details from PostgreSQL error (only in development)
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    // Build details from PostgreSQL error
+    const isProduction = process.env.NODE_ENV === 'production';
     const details: ErrorDetails = {};
 
-    if (isDevelopment) {
-      if (dbError.constraint) details.constraint = dbError.constraint;
+    // Table name is only exposed in non-production environments
+    if (!isProduction) {
       if (dbError.table) details.table = dbError.table;
     }
 
-    // Column is safe to expose (needed for UI field highlighting)
+    // Column and constraint are safe to expose even in production:
+    // - Column: needed for UI field highlighting (e.g., "email field has error")
+    // - Constraint: provides useful context (e.g., "users_email_key", "orders_user_id_fkey")
+    //   without revealing sensitive data or internal implementation details
     if (dbError.column) details.column = dbError.column;
+    if (dbError.constraint) details.constraint = dbError.constraint;
 
     const hasDetails = Object.keys(details).length > 0;
 

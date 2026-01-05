@@ -202,19 +202,18 @@ describe('GlobalExceptionFilter', () => {
         })
       );
 
-      // In development, should include constraint and table
+      // Column and constraint are always exposed (safe for production)
+      // Table is only exposed in non-production environments
       const response = mockResponse.json.mock.calls[0][0];
-      if (process.env.NODE_ENV === 'development') {
-        expect(response.details).toMatchObject({
-          constraint: 'users_email_key',
-          table: 'users',
-          column: 'email',
-        });
-      } else {
-        // In production, only column is exposed
-        expect(response.details?.column).toBe('email');
-        expect(response.details?.constraint).toBeUndefined();
+      expect(response.details?.column).toBe('email');
+      expect(response.details?.constraint).toBe('users_email_key');
+
+      if (process.env.NODE_ENV === 'production') {
+        // In production, table is hidden
         expect(response.details?.table).toBeUndefined();
+      } else {
+        // In non-production, table is exposed
+        expect(response.details?.table).toBe('users');
       }
     });
 
