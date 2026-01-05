@@ -312,15 +312,30 @@ export class GlobalExceptionFilter implements ExceptionFilter {
    * Remove sensitive headers before sending to Sentry
    */
   private sanitizeHeaders(headers: Request['headers']): Record<string, unknown> {
-    const sanitized: Record<string, unknown> = {};
+    const sanitized: Record<string, unknown> = Object.create(null);
     const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key', 'x-auth-token'];
 
     // Safely copy headers without dynamic property injection
     for (const [key, value] of Object.entries(headers)) {
+      // Prevent prototype pollution by checking for dangerous keys
+      if (this.isDangerousKey(key)) {
+        continue;
+      }
+
       if (sensitiveHeaders.includes(key.toLowerCase())) {
-        sanitized[key] = '[REDACTED]';
+        Object.defineProperty(sanitized, key, {
+          value: '[REDACTED]',
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
       } else {
-        sanitized[key] = value;
+        Object.defineProperty(sanitized, key, {
+          value,
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
       }
     }
 
@@ -343,24 +358,52 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       return body.map((item) => this.sanitizeBody(item));
     }
 
-    // Handle objects - deep sanitization
-    const sanitized: Record<string, unknown> = {};
+    // Handle objects - deep sanitization with prototype pollution protection
+    const sanitized: Record<string, unknown> = Object.create(null);
     for (const [key, value] of Object.entries(body)) {
+      // Prevent prototype pollution by checking for dangerous keys
+      if (this.isDangerousKey(key)) {
+        continue;
+      }
+
       // Check if key matches sensitive field (case-insensitive)
       const isSensitive = sensitiveFields.some((field) =>
         key.toLowerCase().includes(field.toLowerCase())
       );
 
       if (isSensitive) {
-        sanitized[key] = '[REDACTED]';
+        Object.defineProperty(sanitized, key, {
+          value: '[REDACTED]',
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
       } else if (value && typeof value === 'object') {
         // Recursively sanitize nested objects/arrays
-        sanitized[key] = this.sanitizeBody(value);
+        Object.defineProperty(sanitized, key, {
+          value: this.sanitizeBody(value),
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
       } else {
-        sanitized[key] = value;
+        Object.defineProperty(sanitized, key, {
+          value,
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
       }
     }
 
     return sanitized;
+  }
+
+  /**
+   * Check if a key is dangerous and could lead to prototype pollution
+   */
+  private isDangerousKey(key: string): boolean {
+    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+    return dangerousKeys.includes(key);
   }
 }

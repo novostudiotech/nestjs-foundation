@@ -499,4 +499,97 @@ describe('GlobalExceptionFilter', () => {
       expect(mockResponse.json).toHaveBeenCalled();
     });
   });
+
+  describe('Prototype Pollution Protection', () => {
+    it('should prevent __proto__ injection in request body', () => {
+      const request = {
+        ...mockRequest,
+        body: {
+          email: 'user@example.com',
+          __proto__: { polluted: true },
+          constructor: { polluted: true },
+          prototype: { polluted: true },
+        },
+      };
+
+      const host = {
+        switchToHttp: jest.fn().mockReturnValue({
+          getResponse: () => mockResponse,
+          getRequest: () => request,
+        }),
+      } as any;
+
+      const error = new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
+      filter.catch(error, host);
+
+      // Verify response is sent without crashing
+      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(mockResponse.json).toHaveBeenCalled();
+
+      // Verify Object.prototype is not polluted
+      expect((Object.prototype as any).polluted).toBeUndefined();
+    });
+
+    it('should prevent __proto__ injection in request headers', () => {
+      const request = {
+        ...mockRequest,
+        headers: {
+          'x-request-id': 'test-id',
+          __proto__: 'malicious',
+          constructor: 'malicious',
+          prototype: 'malicious',
+        },
+      };
+
+      const host = {
+        switchToHttp: jest.fn().mockReturnValue({
+          getResponse: () => mockResponse,
+          getRequest: () => request,
+        }),
+      } as any;
+
+      const error = new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
+      filter.catch(error, host);
+
+      // Verify response is sent without crashing
+      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(mockResponse.json).toHaveBeenCalled();
+
+      // Verify Object.prototype is not polluted
+      expect((Object.prototype as any).malicious).toBeUndefined();
+    });
+
+    it('should prevent nested __proto__ injection', () => {
+      const request = {
+        ...mockRequest,
+        body: {
+          user: {
+            name: 'John',
+            __proto__: { polluted: true },
+          },
+          settings: {
+            theme: 'dark',
+            constructor: { polluted: true },
+          },
+        },
+      };
+
+      const host = {
+        switchToHttp: jest.fn().mockReturnValue({
+          getResponse: () => mockResponse,
+          getRequest: () => request,
+        }),
+      } as any;
+
+      const error = new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
+      filter.catch(error, host);
+
+      // Verify response is sent without crashing
+      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(mockResponse.json).toHaveBeenCalled();
+
+      // Verify Object.prototype is not polluted
+      expect((Object.prototype as any).polluted).toBeUndefined();
+    });
+  });
 });
