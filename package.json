@@ -44,7 +44,7 @@
     "fast-redact": "^3.5.0",
     "helmet": "^8.0.0",
     "nestjs-pino": "^4.5.0",
-    "nestjs-zod": "^5.0.1",
+    "nestjs-zod": "^5.1.0",
     "pg": "^8.16.3",
     "pg-error-constants": "^1.0.0",
     "pino-http": "^11.0.0",
