@@ -265,7 +265,10 @@ test('should create user', async ({ useAuthenticatedApi }) => {
 **Secrets:** Never commit `.env` files. Use environment variables in production.  
 **AUTH_SECRET:** Generate with `openssl rand -base64 32` (min 32 chars)  
 **Features:** Helmet, CORS, rate limiting, compression, data redaction, graceful shutdown  
-**Scanning:** `pnpm audit --audit-level=high` before commits
+**Scanning:** 
+- TruffleHog (secret scanning) runs automatically in CI on all PRs
+- `pnpm audit --audit-level=high` for dependency vulnerabilities before commits
+- Use `# trufflehog:ignore` comment to ignore false positives in code
 
 
 ## Boundaries

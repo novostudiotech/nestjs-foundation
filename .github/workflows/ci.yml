@@ -198,26 +198,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run gitleaks
-        id: gitleaks
-        uses: gitleaks/gitleaks-action@v2
+      - name: Run TruffleHog
+        id: trufflehog
+        uses: trufflesecurity/trufflehog@main
         with:
-          report-format: sarif
-          report-path: gitleaks.sarif
-          redact: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          # Scan all files in the repository
+          path: ./
+          # Only report verified and unknown secrets (high confidence)
+          extra_args: --results=verified,unknown --fail --json
+        continue-on-error: true
 
       - name: Summarize secret scan
         if: always()
         run: |
-          if [ -f gitleaks.sarif ]; then
-            findings=$(jq '.runs[0].results | length' gitleaks.sarif)
-            echo "Gitleaks findings: ${findings}" | tee -a "$GITHUB_STEP_SUMMARY"
-            if [ "${findings}" != "0" ]; then
-              echo "See gitleaks.sarif for details on detected secrets." | tee -a "$GITHUB_STEP_SUMMARY"
-            fi
+          if [ "${{ steps.trufflehog.outcome }}" == "failure" ]; then
+            echo "⚠️ TruffleHog found secrets in the repository" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "Check the TruffleHog step output for details on detected secrets." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
           else
-            echo "No gitleaks report generated." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "✅ No secrets found by TruffleHog" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
