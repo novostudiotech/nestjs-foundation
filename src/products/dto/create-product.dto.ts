@@ -51,7 +51,7 @@ export const CreateProductSchema = z
     inStock: z.boolean().default(true),
     stockQuantity: z.number().int().min(0).optional(),
     tags: z.array(z.string().min(1).max(50)).max(10).optional(),
-    imageUrl: z.string().url().optional(),
+    imageUrl: z.url().optional(),
     discountPercentage: z.number().min(0).max(100).optional(),
     metadata: ProductMetadataSchema.optional(),
     publishedAt: z.string().datetime().optional(),

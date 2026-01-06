@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
-import type { EnvConfig } from '#/app/config';
+import { ConfigService } from '#/app/config';
 import type { EmailConfig, EmailSendResult, SendEmailOptions } from './email.types';
 
 /**
@@ -18,11 +17,11 @@ export class EmailService {
   private readonly resend: Resend | null;
   private readonly config: EmailConfig;
 
-  constructor(configService: ConfigService<EnvConfig>) {
+  constructor(configService: ConfigService) {
     const apiKey = configService.get('RESEND_API_KEY') ?? '';
     const fromEmail = configService.get('EMAIL_FROM') ?? '';
     const replyTo = configService.get('EMAIL_REPLY_TO');
-    const appName = configService.get('APP_NAME') ?? 'Our App';
+    const appName = configService.get('APP_NAME');
 
     this.config = {
       apiKey,

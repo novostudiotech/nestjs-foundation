@@ -34,11 +34,19 @@ Edit `.env` and set required variables:
 
 ```bash
 NODE_ENV=development
+APP_ENV=local
 PORT=3000
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation
 TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test
 AUTH_SECRET=<paste-generated-secret-here>
+APP_NAME=NestJS Foundation
 ```
+
+**Environment Variables Explained:**
+- `NODE_ENV`: How code runs (development/production/test) - affects build optimizations
+- `APP_ENV`: Where code is deployed (local/dev/stage/production) - affects business logic
+- Use `APP_ENV` for feature flags, log levels, API endpoints
+- Use `NODE_ENV` for build mode, minification, source maps
 
 ### 3. Setup Database
 
