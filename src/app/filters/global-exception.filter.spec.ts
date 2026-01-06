@@ -7,6 +7,11 @@ import { ConfigService } from '#/app/config';
 import { ErrorCode } from '#/app/dto/error-response.dto';
 import { GlobalExceptionFilter } from './global-exception.filter';
 
+// Mock AppConfigModule to prevent environment validation in unit tests
+jest.mock('#/app/config/config.module', () => ({
+  AppConfigModule: class MockAppConfigModule {},
+}));
+
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
   let mockLogger: jest.Mocked<Logger>;
