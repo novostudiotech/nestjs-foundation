@@ -88,25 +88,38 @@ export class EmailService {
       });
 
       if (error) {
-        this.logger.error(`Failed to send email to ${options.to}: ${error.message}`);
+        // Mask email for privacy (show only first char and domain)
+        const maskedEmail = this.maskEmail(options.to);
+        this.logger.error(`Failed to send email to ${maskedEmail}: ${error.message}`);
         return {
           success: false,
           error: error.message,
         };
       }
 
-      this.logger.debug(`Email sent successfully to ${options.to} (id: ${data?.id})`);
+      this.logger.debug(`Email sent successfully (id: ${data?.id})`);
       return {
         success: true,
         messageId: data?.id,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Error sending email to ${options.to}: ${errorMessage}`);
+      const maskedEmail = this.maskEmail(options.to);
+      this.logger.error(`Error sending email to ${maskedEmail}: ${errorMessage}`);
       return {
         success: false,
         error: errorMessage,
       };
     }
+  }
+
+  /**
+   * Mask email address for privacy in logs (GDPR/CCPA compliance)
+   * Example: user@example.com -> u***@example.com
+   */
+  private maskEmail(email: string): string {
+    const [local, domain] = email.split('@');
+    if (!domain) return '***';
+    return `${local[0]}***@${domain}`;
   }
 }

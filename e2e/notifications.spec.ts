@@ -6,7 +6,7 @@ test.describe('Notifications Module', () => {
 
     // Test that the app starts successfully even without email configuration
     // The email channel should report as not configured but not crash the app
-    const healthResponse = await api.getHealth();
+    const healthResponse = await api.healthControllerCheck();
     expect(healthResponse.status).toBe(200);
     expect(healthResponse.data.status).toBe('ok');
   });

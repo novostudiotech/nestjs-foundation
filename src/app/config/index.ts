@@ -24,8 +24,8 @@ const envSchema = z.object({
 
   // Email (Resend) - optional, but required for sending emails
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().email().optional(),
-  EMAIL_REPLY_TO: z.string().email().optional(),
+  EMAIL_FROM: z.string().optional(), // Supports both "email@domain.com" and "Name <email@domain.com>"
+  EMAIL_REPLY_TO: z.string().optional(),
 
   // Sentry (optional)
   SENTRY_DSN: z.url().optional(),

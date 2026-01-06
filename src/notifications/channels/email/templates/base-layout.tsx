@@ -13,6 +13,8 @@ export interface BaseLayoutProps {
   logoUrl?: string;
   /** Optional support email for footer */
   supportEmail?: string;
+  /** Optional language code for accessibility (default: "en") */
+  language?: string;
 }
 
 /**
@@ -25,8 +27,9 @@ export const BaseLayout: FC<BaseLayoutProps> = ({
   children,
   logoUrl,
   supportEmail,
+  language = 'en',
 }) => (
-  <Html>
+  <Html lang={language}>
     <Head />
     <Preview>{previewText}</Preview>
     <Body style={styles.body}>

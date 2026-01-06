@@ -24,7 +24,7 @@ The notifications system is designed with extensibility in mind:
 
 ## Architecture
 
-```
+```text
 src/notifications/
 ├── notifications.module.ts      # Main module
 ├── notifications.service.ts     # Orchestrator
@@ -139,19 +139,37 @@ The module is automatically integrated with Better Auth's `emailOTP` plugin:
 ```typescript
 // src/app.module.ts (already configured)
 AuthModule.forRootAsync({
-  imports: [NotificationsModule],
-  useFactory: (notifications: NotificationsService) => ({
-    auth: getBetterAuthConfig({
-      sendOtp: async ({ email, otp, type }) => {
-        await notifications.send(mapOtpType(type), {
-          recipient: email,
-          otp,
-          expiresInMinutes: 5,
-        });
-      },
-    }),
-  }),
-  inject: [NotificationsService],
+  imports: [ConfigModule, NotificationsModule],
+  useFactory: (
+    configService: ConfigService<EnvConfig>,
+    notificationsService: NotificationsService
+  ) => {
+    const databaseUrl = configService.get('DATABASE_URL');
+    const secret = configService.get('AUTH_SECRET');
+
+    // Map Better Auth OTP types to notification types
+    const otpTypeMap: Record<BetterAuthOtpType, NotificationType> = {
+      'sign-in': NotificationType.OTP_SIGN_IN,
+      'email-verification': NotificationType.OTP_EMAIL_VERIFICATION,
+      'forget-password': NotificationType.OTP_PASSWORD_RESET,
+    };
+
+    return {
+      auth: getBetterAuthConfig({
+        databaseUrl,
+        secret,
+        sendOtp: async ({ email, otp, type }) => {
+          const notificationType = otpTypeMap[type];
+          await notificationsService.send(notificationType, {
+            recipient: email,
+            otp,
+            expiresInMinutes: 5,
+          });
+        },
+      }),
+    };
+  },
+  inject: [ConfigService, NotificationsService],
 })
 ```
 
@@ -263,7 +281,7 @@ Example: Adding Push Notifications
 
 ### 1. Create Channel Structure
 
-```
+```text
 src/notifications/channels/push/
 ├── push.channel.ts
 ├── push.service.ts

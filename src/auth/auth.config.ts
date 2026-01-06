@@ -67,7 +67,12 @@ export function getBetterAuthConfig({
               console.error(`Failed to send OTP email to ${email}:`, error);
             });
           } else {
-            console.warn(`OTP for ${email}: ${otp} (sendOtp callback not configured)`);
+            // Only log OTP in development (never in production for security)
+            if (process.env.NODE_ENV !== 'production') {
+              console.warn(`[DEV] OTP for ${email}: ${otp} (sendOtp callback not configured)`);
+            } else {
+              console.warn(`OTP requested for ${email} but sendOtp callback not configured`);
+            }
           }
         },
       }),

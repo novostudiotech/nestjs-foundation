@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { ReactElement } from 'react';
 import { createElement } from 'react';
 import type { NotificationChannel } from '#/notifications/channels/channel.interface';
@@ -26,8 +26,6 @@ import { OtpCodeEmail, WelcomeEmail } from './templates';
  */
 @Injectable()
 export class EmailChannel implements NotificationChannel {
-  private readonly logger = new Logger(EmailChannel.name);
-
   readonly name = 'email';
 
   readonly supportedTypes = [
