@@ -19,7 +19,6 @@ async function bootstrap() {
   });
 
   const logger = app.get(Logger);
-  // biome-ignore lint/correctness/useHookAtTopLevel: This is NestJS app.useLogger(), not a React hook
   app.useLogger(logger);
 
   // Enable graceful shutdown hooks
@@ -90,7 +89,6 @@ async function bootstrap() {
   });
 
   // Apply global exception filter
-  // biome-ignore lint/correctness/useHookAtTopLevel: This is NestJS app.useGlobalFilters(), not a React hook
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
 
   // Setup Swagger
