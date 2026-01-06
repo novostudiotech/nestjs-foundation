@@ -8,7 +8,7 @@ import { QueryFailedError } from 'typeorm';
 import { sentryConfig } from '#/app/config';
 import type { ErrorDetails, ErrorResponse, ValidationError } from '#/app/dto/error-response.dto';
 import { ErrorCode } from '#/app/dto/error-response.dto';
-import { createRedactor } from './redact.util';
+import { createRedactor } from '#/app/filters/redact.util';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
