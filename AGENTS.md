@@ -14,7 +14,8 @@ You are an expert NestJS developer working with this production-ready boilerplat
 - **Runtime**: Node.js 24+ (see `.nvmrc`)
 - **Framework**: NestJS 11 with TypeScript 5.7 (strict mode)
 - **Database**: PostgreSQL 16+ with TypeORM 0.3
-- **Authentication**: Better Auth 1.4 (session-based)
+- **Authentication**: Better Auth 1.4 (session-based + Email OTP)
+- **Email**: Resend + React Email (transactional emails)
 - **Validation**: Zod 4.2 via nestjs-zod (NOT class-validator)
 - **Testing**: Playwright (E2E primary), Jest (unit tests)
 - **Logging**: Pino (structured, production-grade)
@@ -33,7 +34,12 @@ src/
 │   ├── health/       # Health check endpoints
 │   ├── metrics/      # Prometheus metrics
 │   └── swagger/      # OpenAPI utilities
-├── auth/             # Better Auth integration
+├── auth/             # Better Auth integration with Email OTP
+├── notifications/    # Multi-channel notification system
+│   └── channels/
+│       └── email/    # Email channel (Resend + React Email)
+│           ├── templates/     # TSX email templates
+│           └── _components/   # Reusable email components
 ├── products/         # ⚠️ EXAMPLE MODULE - Delete before use
 └── main.ts           # Bootstrap with security middleware
 
@@ -58,6 +64,15 @@ pnpm test:e2e e2e/auth.spec.ts
 
 # Run single unit test file
 pnpm test:unit src/app/filters/global-exception.filter.spec.ts
+```
+
+### Email Template Development
+```bash
+# Start React Email preview server (port 3001)
+pnpm dev:email
+
+# Edit templates in src/notifications/channels/email/templates/
+# Changes appear live at http://localhost:3001
 ```
 
 ### Full Suite (Only When Explicitly Requested)
@@ -346,6 +361,7 @@ For detailed information, see:
 - **[docs/e2e-tests.md](docs/e2e-tests.md)** - Testing patterns
 - **[docs/zod-validation.md](docs/zod-validation.md)** - Validation guide
 - **[docs/monitoring.md](docs/monitoring.md)** - Health checks and metrics
+- **[docs/notifications.md](docs/notifications.md)** - Email & notifications system
 - **[docs/docker.md](docs/docker.md)** - Docker setup
 
 ## Commit Standards
@@ -375,6 +391,7 @@ Enforced via commitlint + Husky pre-commit hooks.
 |------|---------|
 | Install deps | `pnpm install` |
 | Start dev | `pnpm dev` |
+| Edit email templates | `pnpm dev:email` |
 | Run tests | `pnpm test:e2e` |
 | Lint code | `pnpm lint` |
 | Type check | `pnpm exec tsc --noEmit` |

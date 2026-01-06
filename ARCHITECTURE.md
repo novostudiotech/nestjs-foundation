@@ -472,7 +472,8 @@ See **[AGENTS.md](AGENTS.md)** for the complete tech stack.
 - **Database**: PostgreSQL 16 + TypeORM 0.3
 - **Validation**: Zod 4.2 (not class-validator)
 - **Testing**: Playwright (E2E) + Jest (unit)
-- **Auth**: Better Auth 1.4
+- **Auth**: Better Auth 1.4 with Email OTP
+- **Email**: Resend + React Email (transactional emails)
 
 ## Project Structure
 
@@ -480,7 +481,8 @@ See **[AGENTS.md](AGENTS.md)** for the complete structure.
 
 **Key Directories:**
 - `src/app/` - System infrastructure (filters, config, db, health, metrics, swagger)
-- `src/auth/` - Better Auth integration
+- `src/auth/` - Better Auth integration with Email OTP
+- `src/notifications/` - Multi-channel notification system (email, push, etc.)
 - `src/products/` - ⚠️ EXAMPLE module (delete before use)
 - `e2e/` - Playwright tests with fixtures
 - `docs/` - Comprehensive documentation
@@ -502,8 +504,9 @@ feature/
 1. **Bootstrap (`main.ts`)** - Security middleware, CORS, compression, graceful shutdown
 2. **Configuration (`src/app/config/`)** - Zod-based env validation with type inference
 3. **Exception Filter (`src/app/filters/`)** - Global error handling with Sentry
-4. **Authentication (`src/auth/`)** - Better Auth with session-based auth
-5. **Validation (`nestjs-zod`)** - Zod schemas for type-safe validation
+4. **Authentication (`src/auth/`)** - Better Auth with session-based auth + Email OTP
+5. **Notifications (`src/notifications/`)** - Multi-channel notification system (email via Resend)
+6. **Validation (`nestjs-zod`)** - Zod schemas for type-safe validation
 
 **Implementation details:** See reference files in AGENTS.md and respective docs/
 

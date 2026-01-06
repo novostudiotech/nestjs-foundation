@@ -13,7 +13,8 @@ import { HealthModule } from '#/app/health/health.module';
 import { MetricsController } from '#/app/metrics/metrics.controller';
 import { AppController } from '#/app.controller';
 import { AppService } from '#/app.service';
-import { getBetterAuthConfig } from '#/auth/auth.config';
+import { type BetterAuthOtpType, getBetterAuthConfig } from '#/auth/auth.config';
+import { NotificationsModule, NotificationsService, NotificationType } from '#/notifications';
 import { ProductsModule } from '#/products/products.module';
 
 @Module({
@@ -124,14 +125,39 @@ import { ProductsModule } from '#/products/products.module';
       },
       inject: [ConfigService],
     }),
+    NotificationsModule,
     AuthModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService<EnvConfig>) => {
+      imports: [ConfigModule, NotificationsModule],
+      useFactory: (
+        configService: ConfigService<EnvConfig>,
+        notificationsService: NotificationsService
+      ) => {
         const databaseUrl = configService.get('DATABASE_URL');
         const secret = configService.get('AUTH_SECRET');
-        return { auth: getBetterAuthConfig({ databaseUrl, secret }) };
+
+        // Map Better Auth OTP types to notification types
+        const otpTypeMap: Record<BetterAuthOtpType, NotificationType> = {
+          'sign-in': NotificationType.OTP_SIGN_IN,
+          'email-verification': NotificationType.OTP_EMAIL_VERIFICATION,
+          'forget-password': NotificationType.OTP_PASSWORD_RESET,
+        };
+
+        return {
+          auth: getBetterAuthConfig({
+            databaseUrl,
+            secret,
+            sendOtp: async ({ email, otp, type }) => {
+              const notificationType = otpTypeMap[type];
+              await notificationsService.send(notificationType, {
+                recipient: email,
+                otp,
+                expiresInMinutes: 5,
+              });
+            },
+          }),
+        };
       },
-      inject: [ConfigService],
+      inject: [ConfigService, NotificationsService],
     }),
     ProductsModule,
   ],
