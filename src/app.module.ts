@@ -6,13 +6,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import {
-  ConfigModule,
-  ConfigService,
-  getDatabaseConfig,
-  getLoggerConfig,
-  validateEnv,
-} from '#/app/config';
+import { AppConfigModule, ConfigService, getDatabaseConfig, getLoggerConfig } from '#/app/config';
 import { HealthModule } from '#/app/health/health.module';
 import { MetricsController } from '#/app/metrics/metrics.controller';
 import { AppController } from '#/app.controller';
@@ -23,13 +17,11 @@ import { ProductsModule } from '#/products/products.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
-      validate: validateEnv,
-    }),
+    // AppConfigModule is @Global() and includes ConfigModule.forRoot() inside
+    // This makes ConfigService available throughout the app without additional imports
+    // for other modules. No need for { imports: [ConfigModule] } anywhere else.
+    AppConfigModule,
     LoggerModule.forRootAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: getLoggerConfig,
     }),
@@ -38,7 +30,6 @@ import { ProductsModule } from '#/products/products.module';
     }),
     HealthModule,
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         const config = getDatabaseConfig(databaseUrl);
@@ -72,7 +63,7 @@ import { ProductsModule } from '#/products/products.module';
     }),
     NotificationsModule,
     AuthModule.forRootAsync({
-      imports: [ConfigModule, NotificationsModule],
+      imports: [NotificationsModule],
       useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         const secret = configService.get('AUTH_SECRET');
