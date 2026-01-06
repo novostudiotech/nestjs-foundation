@@ -479,9 +479,8 @@ See **[AGENTS.md](AGENTS.md)** for the complete tech stack.
 See **[AGENTS.md](AGENTS.md)** for the complete structure.
 
 **Key Directories:**
-- `src/app/` - Core (filters, DTOs, exception handling)
+- `src/app/` - System infrastructure (filters, config, db, health, metrics, swagger)
 - `src/auth/` - Better Auth integration
-- `src/config/` - Zod-validated environment config
 - `src/products/` - ⚠️ EXAMPLE module (delete before use)
 - `e2e/` - Playwright tests with fixtures
 - `docs/` - Comprehensive documentation
@@ -501,7 +500,7 @@ feature/
 ### Core Components
 
 1. **Bootstrap (`main.ts`)** - Security middleware, CORS, compression, graceful shutdown
-2. **Configuration (`src/config/`)** - Zod-based env validation with type inference
+2. **Configuration (`src/app/config/`)** - Zod-based env validation with type inference
 3. **Exception Filter (`src/app/filters/`)** - Global error handling with Sentry
 4. **Authentication (`src/auth/`)** - Better Auth with session-based auth
 5. **Validation (`nestjs-zod`)** - Zod schemas for type-safe validation
@@ -642,7 +641,7 @@ export const AppDataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
   entities: ['dist/**/*.entity.js'],
-  migrations: ['dist/migrations/*.js'],
+  migrations: ['dist/app/db/migrations/*.js'],
   synchronize: false,           // Never use in production
   logging: ['error', 'warn'],   // Production logging
 });
@@ -651,7 +650,7 @@ export const AppDataSource = new DataSource({
 ### Migration Strategy
 
 **Development:**
-1. Modify Entity → 2. `pnpm migration:generate src/migrations/Name` → 3. Review SQL → 4. `pnpm migration:run`
+1. Modify Entity → 2. `pnpm migration:generate src/app/db/migrations/Name` → 3. Review SQL → 4. `pnpm migration:run`
 
 **Production:**
 - Migrations run automatically on app startup (`app.module.ts`)

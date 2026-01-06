@@ -7,7 +7,7 @@ import { ErrorCode } from '../dto/error-response.dto';
 import { GlobalExceptionFilter } from './global-exception.filter';
 
 // Mock Sentry config to disable it in tests
-jest.mock('../../config', () => ({
+jest.mock('../../app/config', () => ({
   sentryConfig: {
     enabled: false,
     dsn: undefined,

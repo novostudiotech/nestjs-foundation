@@ -25,14 +25,16 @@ You are an expert NestJS developer working with this production-ready boilerplat
 
 ```text
 src/
-├── app/              # Core (filters, DTOs, global exception handling)
+├── app/              # System infrastructure
+│   ├── filters/      # Global exception handling
+│   ├── dto/          # Base DTOs
+│   ├── config/       # Zod-validated environment configuration
+│   ├── db/           # Database utilities, decorators, migrations
+│   ├── health/       # Health check endpoints
+│   ├── metrics/      # Prometheus metrics
+│   └── swagger/      # OpenAPI utilities
 ├── auth/             # Better Auth integration
-├── config/           # Zod-validated environment configuration
-├── db/               # Database utilities, decorators
-├── health/           # Health check endpoints
-├── metrics/          # Prometheus metrics
 ├── products/         # ⚠️ EXAMPLE MODULE - Delete before use
-├── migrations/       # TypeORM migrations
 └── main.ts           # Bootstrap with security middleware
 
 e2e/                  # Playwright E2E tests with fixtures
@@ -98,10 +100,10 @@ pnpm migration:run
 ### Database
 ```bash
 # Generate migration from entity changes
-pnpm migration:generate src/migrations/MigrationName
+pnpm migration:generate src/app/db/migrations/MigrationName
 
 # Create empty migration
-pnpm migration:create src/migrations/MigrationName
+pnpm migration:create src/app/db/migrations/MigrationName
 
 # Run pending migrations
 pnpm migration:run
@@ -349,7 +351,7 @@ Enforced via commitlint + Husky pre-commit hooks.
 | Run tests | `pnpm test:e2e` |
 | Lint code | `pnpm lint` |
 | Type check | `pnpm exec tsc --noEmit` |
-| Generate migration | `pnpm migration:generate src/migrations/Name` |
+| Generate migration | `pnpm migration:generate src/app/db/migrations/Name` |
 | Generate API client | `pnpm test:e2e:generate-api` |
 | Build | `pnpm build` |
 | Start prod | `pnpm start:prod` |

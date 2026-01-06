@@ -16,7 +16,7 @@ export function getDatabaseConfig(databaseUrl: string): DataSourceOptions {
     type: 'postgres',
     url: databaseUrl,
     entities: ['dist/**/*.entity.js'],
-    migrations: ['dist/migrations/*.js'],
+    migrations: ['dist/app/db/migrations/*.js'],
     migrationsTableName: 'migrations',
     ssl: requiresSsl ? { rejectUnauthorized: true } : false,
   };
