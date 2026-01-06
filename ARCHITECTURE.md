@@ -29,7 +29,7 @@ This section outlines the core principles and thinking patterns that guide devel
 
 **Each layer has a single, well-defined responsibility:**
 
-```
+```text
 Controllers → Handle HTTP, delegate to services
 Services   → Contain business logic
 Entities   → Represent data structure
@@ -218,7 +218,7 @@ class UserService {
 
 This application follows a **4-layer architecture**:
 
-```
+```text
 ┌──────────────────────────────────────────────────────┐
 │  Layer 1: Presentation (Controllers + DTOs)          │
 │  Handles HTTP requests, routing, validation          │
@@ -355,7 +355,7 @@ export class Product { /* ... */ }
 
 Some concerns span all layers:
 
-```
+```text
 ┌──────────────────────────────────────────────┐
 │         Cross-Cutting Concerns               │
 │                                              │
@@ -427,7 +427,7 @@ NestJS Foundation is a **production-ready backend boilerplate** built with a **m
 
 ### High-Level Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                        Client Layer                         │
 │  (Web App, Mobile App, Third-party Services)                │
@@ -487,7 +487,7 @@ See **[AGENTS.md](AGENTS.md)** for the complete structure.
 - `docs/` - Comprehensive documentation
 
 **Module Pattern:**
-```
+```text
 feature/
 ├── dto/                 # Zod schemas + DTOs
 ├── feature.controller.ts # HTTP endpoints
@@ -510,7 +510,7 @@ feature/
 
 ## Request Flow
 
-```
+```text
 Client Request
   → Middleware (Helmet, CORS, Compression)
   → NestJS Pipeline (Guards, Pipes, Controllers)
@@ -532,7 +532,7 @@ Errors at any stage → GlobalExceptionFilter → Standardized Response
 
 **Better Auth 1.4** provides session-based authentication with:
 
-- **Routes**: `/api/auth/sign-up/email`, `/api/auth/sign-in/email`, `/api/auth/get-session`, `/api/auth/sign-out`
+- **Routes**: `/auth/sign-up/email`, `/auth/sign-in/email`, `/auth/get-session`, `/auth/sign-out`
 - **Session Storage**: Database (PostgreSQL) with HTTP-only cookies
 - **Password Hashing**: bcrypt
 - **Guards**: Use `@Session()` decorator to access current user in protected routes
@@ -545,7 +545,7 @@ For implementation details, see Better Auth documentation and `src/auth/auth.con
 
 ### Error Classification
 
-```
+```text
 Exception Type → Handler → HTTP Status → Error Code → Response
 
 ZodValidationException
@@ -614,7 +614,7 @@ const redactPaths = [
 
 ### Sentry Integration
 
-```
+```text
 Error Severity → Action
 
 status >= 500

@@ -46,10 +46,10 @@ docs/                 # Comprehensive documentation
 ### File-Scoped (Preferred - Fast Feedback)
 ```bash
 # Type check single file (fast, no compilation)
-pnpm exec tsc --noEmit src/users/users.service.ts
+pnpm exec tsc --noEmit src/products/products.service.ts
 
 # Lint and format single file
-pnpm exec biome check --write src/users/users.controller.ts
+pnpm exec biome check --write src/products/products.controller.ts
 
 # Run single E2E test file
 pnpm test:e2e e2e/auth.spec.ts
@@ -149,11 +149,11 @@ pnpm test:e2e:generate-api
 
 **Controller (follow this pattern):**
 ```typescript
-// src/users/users.controller.ts
-@ApiTags('users')
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+// src/products/products.controller.ts
+@ApiTags('products')
+@Controller('products')
+export class ProductsController {
+  constructor(private readonly productsService: ProductsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create user' })
@@ -313,7 +313,6 @@ When making architectural changes:
 For detailed information, see:
 - **[SETUP.md](SETUP.md)** - Quick start guide
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System design and patterns
-- **[docs/ai-agents-guide.md](docs/ai-agents-guide.md)** - How AI agents work with this project
 - **[docs/error-handling.md](docs/error-handling.md)** - Error codes and Sentry
 - **[docs/e2e-tests.md](docs/e2e-tests.md)** - Testing patterns
 - **[docs/zod-validation.md](docs/zod-validation.md)** - Validation guide
@@ -338,7 +337,7 @@ Enforced via commitlint + Husky pre-commit hooks.
 - **Swagger**: Available at `/docs` in development
 - **Health checks**: `/health` endpoint with database status
 - **Metrics**: `/metrics` endpoint (Prometheus format)
-- **Better Auth**: Routes at `/api/auth/*` (sign-up, sign-in, session)
+- **Better Auth**: Routes at `/auth/*` (sign-up, sign-in, session)
 - **Patches**: Two patches applied via pnpm (see `docs/working-with-patches.md`)
 
 ## Quick Reference
