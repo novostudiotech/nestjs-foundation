@@ -152,6 +152,7 @@ export class EmailChannel implements NotificationChannel {
 
   /**
    * Extract recipient email from payload
+   * TODO: Require payload to extend BaseNotificationPayload in NotificationChannel interface
    */
   private getRecipient(payload: unknown): string | undefined {
     if (typeof payload === 'object' && payload !== null && 'recipient' in payload) {
