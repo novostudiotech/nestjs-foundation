@@ -14,12 +14,18 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
   CORS_ORIGIN: z.string().optional(),
+  APP_NAME: z.string().default('Our App'),
 
   // Database
   DATABASE_URL: z.url(),
 
   // Auth
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters long'),
+
+  // Email (Resend) - optional, but required for sending emails
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(), // Supports both "email@domain.com" and "Name <email@domain.com>"
+  EMAIL_REPLY_TO: z.string().optional(),
 
   // Sentry (optional)
   SENTRY_DSN: z.url().optional(),

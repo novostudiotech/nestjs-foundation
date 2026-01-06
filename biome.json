@@ -6,8 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false,
-    "includes": ["**", "!**/node_modules", "!**/dist", "!**/coverage", "!**/pnpm-lock.yaml"]
+    "ignoreUnknown": false
   },
   "formatter": {
     "enabled": true,
@@ -29,7 +28,8 @@
       },
       "correctness": {
         "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn"
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "off"
       },
       "complexity": {
         "noForEach": "off",
@@ -40,6 +40,18 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["**/*.tsx"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useHookAtTopLevel": "warn"
+          }
+        }
+      }
+    }
+  ],
   "javascript": {
     "parser": {
       "unsafeParameterDecoratorsEnabled": true
