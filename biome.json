@@ -6,15 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!**/node_modules",
-      "!**/dist",
-      "!**/coverage",
-      "!**/pnpm-lock.yaml",
-      "!**/.codeql"
-    ]
+    "ignoreUnknown": false
   },
   "formatter": {
     "enabled": true,
