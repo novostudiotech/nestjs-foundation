@@ -21,7 +21,7 @@ const config: Config = {
   coverageDirectory: './coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^#/(.*)$': '<rootDir>/src/$1',
   },
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/e2e/'],
   modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/e2e/'],

@@ -1,5 +1,5 @@
 import { DataSource, Repository } from 'typeorm';
-import { getDatabaseConfig } from '../src/app/config/db.config';
+import { getDatabaseConfig } from '#/app/config/db.config';
 
 /**
  * Database fixture interface for E2E tests
