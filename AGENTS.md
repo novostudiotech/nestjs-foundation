@@ -207,7 +207,7 @@ import { User } from '@/app/db/entities/user.entity';  // Looks like @nestjs/*, 
 - `@` is reserved for npm scoped packages (`@nestjs/common`, `@types/node`)
 - `#` aligns with OpenAPI/Swagger internal references (`#/components/schemas`)
 - Provides clear visual distinction between external and internal imports
-- See [ARCHITECTURE.md](ARCHITECTURE.md#path-aliases-decision-why--instead-of-) for full rationale
+- See [ARCHITECTURE.md](ARCHITECTURE.md#architectural-choices) for full rationale
 
 ### ❌ Bad Code Examples (Avoid These)
 
