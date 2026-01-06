@@ -5,7 +5,7 @@ import { Logger } from 'nestjs-pino';
 import { ZodValidationException } from 'nestjs-zod';
 import { FOREIGN_KEY_VIOLATION, NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 import { QueryFailedError } from 'typeorm';
-import { sentryConfig } from '../../config';
+import { sentryConfig } from '../config';
 import type { ErrorDetails, ErrorResponse, ValidationError } from '../dto/error-response.dto';
 import { ErrorCode } from '../dto/error-response.dto';
 import { createRedactor } from './redact.util';

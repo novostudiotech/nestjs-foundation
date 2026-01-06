@@ -7,13 +7,13 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { EnvConfig, validateEnv } from './app/config';
+import { getDatabaseConfig } from './app/config/db.config';
+import { HealthModule } from './app/health/health.module';
+import { MetricsController } from './app/metrics/metrics.controller';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { getBetterAuthConfig } from './auth/auth.config';
-import { EnvConfig, validateEnv } from './config';
-import { getDatabaseConfig } from './config/db.config';
-import { HealthModule } from './health/health.module';
-import { MetricsController } from './metrics/metrics.controller';
 import { ProductsModule } from './products/products.module';
 
 @Module({

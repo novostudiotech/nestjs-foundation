@@ -8,9 +8,9 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { GlobalExceptionFilter } from './app/filters/global-exception.filter';
+import { mergeOpenAPIDocuments } from './app/swagger/openapi-merge.util';
 import { AppModule } from './app.module';
 import { generateBetterAuthOpenAPISchema } from './auth/openapi';
-import { mergeOpenAPIDocuments } from './swagger/openapi-merge.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

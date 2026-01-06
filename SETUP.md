@@ -101,10 +101,10 @@ pnpm lint
 
 ```bash
 # Create migration
-pnpm migration:create src/migrations/MigrationName
+pnpm migration:create src/app/db/migrations/MigrationName
 
 # Generate from entity changes
-pnpm migration:generate src/migrations/MigrationName
+pnpm migration:generate src/app/db/migrations/MigrationName
 
 # Run migrations
 pnpm migration:run
