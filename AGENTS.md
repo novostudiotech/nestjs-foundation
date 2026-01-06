@@ -140,6 +140,7 @@ pnpm test:e2e:generate-api
 - Explicit return types on public methods
 - Use `async/await`, never callbacks
 - Organize imports: stdlib → third-party → local
+- Use `#/` path aliases for internal modules (avoid deep relative paths like `../../..`)
 
 **Formatting (Biome):**
 - Line length: 100 characters
@@ -184,6 +185,29 @@ throw new BadRequestException({
   message: 'Invalid input',
 });
 ```
+
+**Import Paths (use `#/` for internal modules):**
+```typescript
+// ✅ Good - Clear distinction between external and internal
+import { Injectable } from '@nestjs/common';     // npm package
+import type { Request } from '@types/express';    // npm package
+import { User } from '#/app/db/entities/user.entity';      // internal
+import { AuthService } from '#/auth/auth.service';         // internal
+import { ErrorCode } from '#/app/dto/error-response.dto';  // internal
+
+// ❌ Bad - Relative paths are harder to refactor
+import { User } from '../../../app/db/entities/user.entity';
+import { AuthService } from '../../auth/auth.service';
+
+// ❌ Bad - Confuses npm packages with internal modules
+import { User } from '@/app/db/entities/user.entity';  // Looks like @nestjs/*, @types/*
+```
+
+**Why `#/` instead of `@/`?** The hash symbol (`#`) is used because:
+- `@` is reserved for npm scoped packages (`@nestjs/common`, `@types/node`)
+- `#` aligns with OpenAPI/Swagger internal references (`#/components/schemas`)
+- Provides clear visual distinction between external and internal imports
+- See [ARCHITECTURE.md](ARCHITECTURE.md#path-aliases-decision-why--instead-of-) for full rationale
 
 ### ❌ Bad Code Examples (Avoid These)
 

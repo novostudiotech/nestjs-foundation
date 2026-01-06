@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { PrimaryUuidV7AutoColumn } from '../../app/db/decorators/primary-uuid-v7-auto-column.decorator';
-import { AuditableEntity } from '../../app/db/entities/auditable.entity';
+import { PrimaryUuidV7AutoColumn } from '#/app/db/decorators/primary-uuid-v7-auto-column.decorator';
+import { AuditableEntity } from '#/app/db/entities/auditable.entity';
 import { UserEntity } from './user.entity';
 
 /**

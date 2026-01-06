@@ -765,7 +765,8 @@ Centralized error handling for consistent error responses across the application
 **Session-based auth** - Better security than JWT, simpler implementation  
 **Fail-fast approach** - Validate early, fail loudly (env validation, migrations)  
 **Type-safe everything** - Zod for runtime, TypeScript for compile-time  
-**Observability-first** - Logging, metrics, health checks built-in
+**Observability-first** - Logging, metrics, health checks built-in  
+**`#/` path aliases** - Hash symbol avoids conflicts with npm scoped packages (`@org/pkg`) and aligns with OpenAPI internal refs (`#/components/schemas`)
 
 ## Next Steps
 

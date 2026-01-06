@@ -18,7 +18,7 @@ import {
   Session,
   type UserSession,
 } from '@thallesp/nestjs-better-auth';
-import { ErrorResponseDto } from '../app/dto/error-response.dto';
+import { ErrorResponseDto } from '#/app/dto/error-response.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import {
   CreateProductResponseDto,
