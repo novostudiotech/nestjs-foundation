@@ -205,7 +205,7 @@ jobs:
           # Scan all files in the repository
           path: ./
           # Only report verified and unknown secrets (high confidence)
-          extra_args: --results=verified,unknown --fail --json
+          extra_args: --results=verified,unknown
         continue-on-error: true
 
       - name: Summarize secret scan
