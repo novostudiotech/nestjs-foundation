@@ -1,5 +1,4 @@
 import { Logger, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { InjectDataSource, TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
@@ -7,8 +6,13 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { EnvConfig, validateEnv } from '#/app/config';
-import { getDatabaseConfig } from '#/app/config/db.config';
+import {
+  ConfigModule,
+  ConfigService,
+  getDatabaseConfig,
+  getLoggerConfig,
+  validateEnv,
+} from '#/app/config';
 import { HealthModule } from '#/app/health/health.module';
 import { MetricsController } from '#/app/metrics/metrics.controller';
 import { AppController } from '#/app.controller';
@@ -23,70 +27,11 @@ import { ProductsModule } from '#/products/products.module';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
       validate: validateEnv,
-      validationOptions: {
-        allowUnknown: false,
-        abortEarly: false,
-      },
     }),
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService<EnvConfig>) => {
-        const nodeEnv = configService.get('NODE_ENV');
-        const logLevel =
-          configService.get('LOG_LEVEL') || (nodeEnv === 'production' ? 'info' : 'debug');
-
-        return {
-          pinoHttp: {
-            level: logLevel,
-            transport:
-              nodeEnv !== 'production'
-                ? {
-                    target: 'pino-pretty',
-                    options: {
-                      colorize: true,
-                      singleLine: true,
-                      translateTime: 'SYS:standard',
-                      ignore: 'pid,hostname',
-                    },
-                  }
-                : undefined,
-            serializers: {
-              req: (req) => ({
-                id: req.id,
-                method: req.method,
-                url: req.url,
-                headers: {
-                  // Redact sensitive headers
-                  authorization: req.headers.authorization ? '[REDACTED]' : undefined,
-                  cookie: req.headers.cookie ? '[REDACTED]' : undefined,
-                  'x-api-key': req.headers['x-api-key'] ? '[REDACTED]' : undefined,
-                },
-              }),
-              res: (res) => ({
-                statusCode: res.statusCode,
-              }),
-            },
-            redact: {
-              paths: [
-                'req.headers.authorization',
-                'req.headers.cookie',
-                'req.headers["x-api-key"]',
-                'req.headers["X-API-Key"]',
-                'req.body.password',
-                'req.body.token',
-                'req.body.secret',
-                'res.headers["set-cookie"]',
-              ],
-              remove: true,
-            },
-            // Limit body size to prevent logging large payloads
-            customProps: () => ({
-              environment: nodeEnv,
-            }),
-          },
-        };
-      },
       inject: [ConfigService],
+      useFactory: getLoggerConfig,
     }),
     PrometheusModule.register({
       controller: MetricsController,
@@ -94,7 +39,7 @@ import { ProductsModule } from '#/products/products.module';
     HealthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService<EnvConfig>) => {
+      useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         const config = getDatabaseConfig(databaseUrl);
 
@@ -128,10 +73,7 @@ import { ProductsModule } from '#/products/products.module';
     NotificationsModule,
     AuthModule.forRootAsync({
       imports: [ConfigModule, NotificationsModule],
-      useFactory: (
-        configService: ConfigService<EnvConfig>,
-        notificationsService: NotificationsService
-      ) => {
+      useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         const secret = configService.get('AUTH_SECRET');
 

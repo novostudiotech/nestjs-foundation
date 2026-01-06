@@ -3,21 +3,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from 'nestjs-pino';
 import { ZodValidationException } from 'nestjs-zod';
 import { QueryFailedError } from 'typeorm';
+import { ConfigService } from '#/app/config';
 import { ErrorCode } from '#/app/dto/error-response.dto';
 import { GlobalExceptionFilter } from './global-exception.filter';
-
-// Mock Sentry config to disable it in tests
-jest.mock('#/app/config', () => ({
-  sentryConfig: {
-    enabled: false,
-    dsn: undefined,
-    environment: 'test',
-  },
-}));
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
   let mockLogger: jest.Mocked<Logger>;
+  let mockConfigService: jest.Mocked<ConfigService>;
 
   const mockRequest = {
     url: '/test',
@@ -50,12 +43,26 @@ describe('GlobalExceptionFilter', () => {
       warn: jest.fn(),
     } as any;
 
+    mockConfigService = {
+      get: jest.fn((key: string) => {
+        // Return undefined for SENTRY_DSN to disable Sentry in tests
+        if (key === 'SENTRY_DSN') return undefined;
+        if (key === 'SENTRY_ENVIRONMENT') return 'test';
+        if (key === 'NODE_ENV') return 'test';
+        return undefined;
+      }),
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GlobalExceptionFilter,
         {
           provide: Logger,
           useValue: mockLogger,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();

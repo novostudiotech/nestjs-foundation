@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AuthService } from '@thallesp/nestjs-better-auth';
@@ -7,6 +6,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
+import { ConfigService } from '#/app/config';
 import { GlobalExceptionFilter } from '#/app/filters/global-exception.filter';
 import { mergeOpenAPIDocuments } from '#/app/swagger/openapi-merge.util';
 import { AppModule } from '#/app.module';
@@ -63,7 +63,7 @@ async function bootstrap() {
     })
   );
 
-  // Get config service for CORS configuration
+  // Get config service for CORS configuration and global filter
   const configService = app.get(ConfigService);
 
   // Setup CORS - use validated env variable
@@ -89,7 +89,7 @@ async function bootstrap() {
   });
 
   // Apply global exception filter
-  app.useGlobalFilters(new GlobalExceptionFilter(logger));
+  app.useGlobalFilters(new GlobalExceptionFilter(logger, configService));
 
   // Setup Swagger
   const config = new DocumentBuilder()

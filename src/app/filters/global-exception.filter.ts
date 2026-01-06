@@ -5,7 +5,7 @@ import { Logger } from 'nestjs-pino';
 import { ZodValidationException } from 'nestjs-zod';
 import { FOREIGN_KEY_VIOLATION, NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 import { QueryFailedError } from 'typeorm';
-import { sentryConfig } from '#/app/config';
+import { ConfigService } from '#/app/config';
 import type { ErrorDetails, ErrorResponse, ValidationError } from '#/app/dto/error-response.dto';
 import { ErrorCode } from '#/app/dto/error-response.dto';
 import { createRedactor } from '#/app/filters/redact.util';
@@ -16,7 +16,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly redactHeaders: ReturnType<typeof createRedactor>;
   private readonly redactBody: ReturnType<typeof createRedactor>;
 
-  constructor(private readonly logger: Logger) {
+  constructor(
+    private readonly logger: Logger,
+    private readonly configService: ConfigService
+  ) {
     // Headers redactor - removes sensitive authentication headers
     // Headers are flat (no nesting), so depth=0
     // Use plainKeys for headers with special characters (hyphens) that require bracket notation
@@ -40,12 +43,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     });
 
     // Initialize Sentry if DSN is provided
-    this.sentryEnabled = sentryConfig.enabled;
-    if (this.sentryEnabled && sentryConfig.dsn) {
+    const sentryDsn = this.configService.get('SENTRY_DSN');
+    const sentryEnvironment =
+      this.configService.get('SENTRY_ENVIRONMENT') || this.configService.get('NODE_ENV');
+    this.sentryEnabled = Boolean(sentryDsn);
+
+    if (this.sentryEnabled && sentryDsn) {
       try {
         Sentry.init({
-          dsn: sentryConfig.dsn,
-          environment: sentryConfig.environment,
+          dsn: sentryDsn,
+          environment: sentryEnvironment,
           // Only capture errors, not transactions (performance monitoring)
           tracesSampleRate: 0,
           // Don't send any PII (Personally Identifiable Information) by default

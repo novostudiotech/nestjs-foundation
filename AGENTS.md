@@ -378,6 +378,11 @@ Enforced via commitlint + Husky pre-commit hooks.
 
 ## Additional Notes
 
+- **Environment Variables**: 
+  - `NODE_ENV` (development/production/test) - How code runs (build mode, optimizations)
+  - `APP_ENV` (local/dev/stage/production) - Where code is deployed (environment)
+  - Use `APP_ENV` for business logic (feature flags, log levels, API endpoints)
+  - Use `NODE_ENV` for build optimizations (minification, source maps)
 - **Migrations**: Run automatically on app startup (see `app.module.ts`)
 - **Swagger**: Available at `/docs` in development
 - **Health checks**: `/health` endpoint with database status

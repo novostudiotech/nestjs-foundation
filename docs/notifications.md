@@ -8,10 +8,10 @@ Multi-channel notification system with email support via [Resend](https://resend
 
 ```bash
 # .env
-RESEND_API_KEY=re_xxxxx              # Get from https://resend.com/api-keys
-EMAIL_FROM=noreply@yourdomain.com    # Must be from verified domain
+RESEND_API_KEY=re_xxxxx               # Get from https://resend.com/api-keys
+EMAIL_FROM=noreply@yourdomain.com     # Must be from verified domain
 EMAIL_REPLY_TO=support@yourdomain.com # Optional
-APP_NAME=My App                       # Optional, defaults to "Our App"
+APP_NAME=NestJS Foundation            # Required
 ```
 
 ### 2. Send Notifications
