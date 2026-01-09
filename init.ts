@@ -184,13 +184,11 @@ async function promptUser(): Promise<ProjectConfig> {
   }
 
   // Auth secret
-  const generateAuthSecret = await question(
-    `${colors.cyan}Generate AUTH_SECRET automatically?${colors.reset} (Y/n): `
+  const defaultAuthSecret = generateSecret();
+  const authSecretInput = await question(
+    `${colors.cyan}AUTH_SECRET${colors.reset} (${colors.dim}auto-generated${colors.reset}): `
   );
-  const authSecret =
-    generateAuthSecret.toLowerCase() === 'n'
-      ? await question(`${colors.cyan}AUTH_SECRET${colors.reset}: `)
-      : generateSecret();
+  const authSecret = authSecretInput.trim() || defaultAuthSecret;
 
   // App name for emails
   const appNameInput = await question(
