@@ -181,6 +181,51 @@ pnpm test:e2e
 git push origin feature/my-feature
 ```
 
+## GitHub Repository Setup
+
+After pushing your repository to GitHub, enable these settings for full CI/CD functionality:
+
+### Required Settings
+
+1. **Code Security and Analysis** (https://github.com/YOUR_ORG/YOUR_REPO/settings/security_analysis)
+   - Enable **Dependency graph**
+   - Enable **Dependabot alerts**
+   - Enable **Dependabot security updates**
+   - Enable **Secret scanning**
+
+2. **Actions Permissions** (https://github.com/YOUR_ORG/YOUR_REPO/settings/actions)
+   - Set **Workflow permissions** to "Read and write permissions"
+   - Enable **Allow GitHub Actions to create and approve pull requests**
+
+### Why These Are Needed
+
+- **Security scanning**: Trivy in CI uploads vulnerability reports to GitHub Security
+- **Secret scanning**: Prevents accidental commit of credentials (via TruffleHog)
+- **Workflow permissions**: Allows CI/CD to push Docker images and create releases
+
+### CodeQL (Public Repositories Only)
+
+**Note**: The CodeQL workflow is included in the boilerplate but will be automatically removed when you run the init script (since most projects are private).
+
+If your repository is **public**, you can keep and use CodeQL for advanced code analysis:
+
+1. Skip running the init script, or restore `.github/workflows/codeql.yml` after init
+2. Go to **Code Security and Analysis** settings
+3. Enable **Code scanning** (CodeQL)
+4. CodeQL is free for public repositories but requires a paid plan for private repos
+
+### Troubleshooting
+
+If you see `security-events: write` permission errors:
+- Check that Code Security is enabled (step 1 above)
+- Verify workflow has `security-events: write` in permissions section
+- Ensure repository is not a fork (security features limited on forks)
+
+If Trivy security scanning fails:
+- This is expected for private repositories without GitHub Advanced Security
+- You can still view Trivy results in the Actions logs
+- Consider upgrading to GitHub Advanced Security for private repos if needed
+
 ## Getting Help
 
 1. Check [Common Issues](#common-issues)
