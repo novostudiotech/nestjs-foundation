@@ -362,6 +362,30 @@ function applyReplacements(config: ProjectConfig, rootDir: string): void {
   log.success('All changes applied!');
 }
 
+function buildEnvReplacementMap(config: ProjectConfig): ReplacementMap {
+  return {
+    exact: [
+      {
+        from: 'DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation?sslmode=disable',
+        to: `DATABASE_URL=${config.databaseUrl}`,
+      },
+      {
+        from: 'TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/nestjs_foundation_test?sslmode=disable',
+        to: `TEST_DATABASE_URL=${config.testDatabaseUrl}`,
+      },
+      {
+        from: 'AUTH_SECRET=your-secret-key-here-must-be-at-least-32-chars-long',
+        to: `AUTH_SECRET=${config.authSecret}`,
+      },
+      {
+        from: 'APP_NAME="NestJS Foundation"',
+        to: `APP_NAME="${config.appName}"`,
+      },
+    ],
+    patterns: [],
+  };
+}
+
 function setupEnvironment(config: ProjectConfig, rootDir: string): void {
   log.title('🔧 Setting up environment files...');
 
@@ -373,31 +397,16 @@ function setupEnvironment(config: ProjectConfig, rootDir: string): void {
     return;
   }
 
-  // Copy .env.example to .env and apply replacements
-  let envContent = readFileSync(envExamplePath, 'utf-8');
-
-  // Replace database URLs
-  envContent = envContent.replace(
-    /DATABASE_URL=postgresql:\/\/postgres:postgres@localhost:5432\/nestjs_foundation\?sslmode=disable/g,
-    `DATABASE_URL=${config.databaseUrl}`
-  );
-  envContent = envContent.replace(
-    /TEST_DATABASE_URL=postgresql:\/\/postgres:postgres@localhost:5433\/nestjs_foundation_test\?sslmode=disable/g,
-    `TEST_DATABASE_URL=${config.testDatabaseUrl}`
-  );
-
-  // Replace AUTH_SECRET
-  envContent = envContent.replace(
-    /AUTH_SECRET=your-secret-key-here-must-be-at-least-32-chars-long/g,
-    `AUTH_SECRET=${config.authSecret}`
-  );
-
-  // Replace APP_NAME
-  envContent = envContent.replace(/APP_NAME="NestJS Foundation"/g, `APP_NAME="${config.appName}"`);
-
+  // Copy .env.example to .env
+  const envContent = readFileSync(envExamplePath, 'utf-8');
   // lgtm[js/file-system-race]
   // codeql[js/file-system-race]: Init script runs once in controlled environment
   writeFileSync(envPath, envContent, 'utf-8');
+
+  // Apply replacements using smartReplace
+  const replacements = buildEnvReplacementMap(config);
+  smartReplace(envPath, replacements, false);
+
   log.success('.env file created!');
 }
 
