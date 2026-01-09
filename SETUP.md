@@ -181,6 +181,40 @@ pnpm test:e2e
 git push origin feature/my-feature
 ```
 
+## GitHub Repository Setup
+
+After pushing your repository to GitHub, enable these settings for full CI/CD functionality:
+
+### Required Settings
+
+1. **Code Security and Analysis** (https://github.com/YOUR_ORG/YOUR_REPO/settings/security_analysis)
+   - Enable **Dependency graph**
+   - Enable **Dependabot alerts**
+   - Enable **Dependabot security updates**
+   - Enable **Secret scanning**
+   - Enable **Code scanning** (CodeQL)
+
+2. **Code Quality** (https://github.com/YOUR_ORG/YOUR_REPO/settings/code-quality)
+   - Enable **Code scanning alerts**
+
+3. **Actions Permissions** (https://github.com/YOUR_ORG/YOUR_REPO/settings/actions)
+   - Set **Workflow permissions** to "Read and write permissions"
+   - Enable **Allow GitHub Actions to create and approve pull requests**
+
+### Why These Are Needed
+
+- **Security scanning**: Trivy in CI uploads vulnerability reports to GitHub Security
+- **Code scanning**: CodeQL analyzes code for security issues
+- **Secret scanning**: Prevents accidental commit of credentials
+- **Workflow permissions**: Allows CI/CD to push Docker images and create releases
+
+### Troubleshooting
+
+If you see `security-events: write` permission errors:
+- Check that Code Security is enabled (step 1 above)
+- Verify workflow has `security-events: write` in permissions section
+- Ensure repository is not a fork (security features limited on forks)
+
 ## Getting Help
 
 1. Check [Common Issues](#common-issues)

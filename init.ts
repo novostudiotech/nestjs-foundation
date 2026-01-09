@@ -617,6 +617,39 @@ async function main(): Promise<void> {
     log.title('🎉 Project initialized successfully!');
     console.log(`Your project ${colors.bright}${config.projectName}${colors.reset} is ready!`);
     console.log();
+
+    // GitHub setup reminder
+    if (config.gitOrigin) {
+      log.title('⚙️  GitHub Repository Setup Required');
+      log.warning('After pushing to GitHub, enable these settings for full CI/CD:');
+      console.log();
+      console.log(`  ${colors.bright}1. Code Security & Analysis${colors.reset}`);
+      console.log(
+        `     ${colors.dim}https://github.com/YOUR_ORG/YOUR_REPO/settings/security_analysis${colors.reset}`
+      );
+      console.log(`     • Enable Dependency graph`);
+      console.log(`     • Enable Dependabot alerts`);
+      console.log(`     • Enable Secret scanning`);
+      console.log(`     • Enable Code scanning (CodeQL)`);
+      console.log();
+      console.log(`  ${colors.bright}2. Code Quality${colors.reset}`);
+      console.log(
+        `     ${colors.dim}https://github.com/YOUR_ORG/YOUR_REPO/settings/code-quality${colors.reset}`
+      );
+      console.log(`     • Enable Code scanning alerts`);
+      console.log();
+      console.log(`  ${colors.bright}3. Actions Permissions${colors.reset}`);
+      console.log(
+        `     ${colors.dim}https://github.com/YOUR_ORG/YOUR_REPO/settings/actions${colors.reset}`
+      );
+      console.log(`     • Set "Read and write permissions"`);
+      console.log(`     • Enable "Allow GitHub Actions to create and approve pull requests"`);
+      console.log();
+      log.info('These settings enable security scanning, vulnerability reports, and CI/CD.');
+      log.info('See SETUP.md for detailed instructions.');
+      console.log();
+    }
+
     log.info('Next steps:');
     if (!config.installDeps) {
       console.log(`  1. ${colors.dim}pnpm install${colors.reset}`);
@@ -629,6 +662,11 @@ async function main(): Promise<void> {
     console.log(
       `  ${config.installDeps && config.setupDatabase ? '1' : '2'}. ${colors.dim}pnpm dev${colors.reset}`
     );
+    if (config.gitOrigin) {
+      console.log(
+        `  ${config.installDeps && config.setupDatabase ? '2' : '3'}. ${colors.dim}git push -u origin main${colors.reset}`
+      );
+    }
     console.log();
     log.success('Happy coding! 🚀');
   } catch (error) {
