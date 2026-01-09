@@ -37,7 +37,7 @@ NODE_ENV=development
 APP_ENV=local
 PORT=3000
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation?sslmode=disable
-TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/nestjs_foundation_test?sslmode=disable
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test?sslmode=disable
 AUTH_SECRET=<paste-generated-secret-here>
 APP_NAME="NestJS Foundation"
 ```
@@ -146,8 +146,8 @@ psql -h localhost -p 5432 -U postgres
 ### Database Does Not Exist
 
 ```bash
-createdb {{PROJECT_SLUG}}
-createdb {{PROJECT_SLUG}}_test
+createdb nestjs_foundation
+createdb nestjs_foundation_test
 ```
 
 ## Documentation
