@@ -42,6 +42,8 @@ AUTH_SECRET=<paste-generated-secret-here>
 APP_NAME="NestJS Foundation"
 ```
 
+> **⚠️ Security Warning**: `sslmode=disable` is intended for **local development only** and is insecure for production environments.
+
 **Environment Variables Explained:**
 - `NODE_ENV`: How code runs (development/production/test) - affects build optimizations
 - `APP_ENV`: Where code is deployed (local/dev/stage/production) - affects business logic

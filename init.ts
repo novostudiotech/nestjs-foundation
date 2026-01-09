@@ -304,6 +304,8 @@ function smartReplace(filePath: string, replacements: ReplacementMap, preview: b
   }
 
   if (hasChanges && !preview) {
+    // lgtm[js/file-system-race]
+    // codeql[js/file-system-race]: Init script runs once in controlled environment
     writeFileSync(filePath, newContent, 'utf-8');
   }
 
@@ -393,6 +395,8 @@ function setupEnvironment(config: ProjectConfig, rootDir: string): void {
   // Replace APP_NAME
   envContent = envContent.replace(/APP_NAME="NestJS Foundation"/g, `APP_NAME="${config.appName}"`);
 
+  // lgtm[js/file-system-race]
+  // codeql[js/file-system-race]: Init script runs once in controlled environment
   writeFileSync(envPath, envContent, 'utf-8');
   log.success('.env file created!');
 }
@@ -403,6 +407,8 @@ function setupGit(config: ProjectConfig, rootDir: string): void {
   try {
     // Remove existing git history
     const gitDir = join(rootDir, '.git');
+    // lgtm[js/file-system-race]
+    // codeql[js/file-system-race]: Init script runs once in controlled environment
     if (existsSync(gitDir)) {
       log.warning('⚠️  This will DELETE your existing git history!');
       log.step('Removing existing git history...');
@@ -452,6 +458,8 @@ function cleanupPackageJson(rootDir: string): void {
       // Use destructuring to avoid delete operator
       const { 'init:project': _removed, ...restScripts } = packageJson.scripts;
       packageJson.scripts = restScripts;
+      // lgtm[js/file-system-race]
+      // codeql[js/file-system-race]: Init script runs once in controlled environment
       writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf-8');
     }
   } catch (error) {
