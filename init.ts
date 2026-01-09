@@ -73,6 +73,7 @@ interface ProjectConfig {
   dbPassword?: string;
   dbHost?: string;
   dbPort?: string;
+  removeProductsModule: boolean;
   installDeps: boolean;
 }
 
@@ -97,6 +98,7 @@ const FILES_TO_PROCESS = [
   'docker-compose.yml',
   'SETUP.md',
   'AGENTS.md',
+  'src/app.module.ts',
 ];
 
 const rl = readline.createInterface({
@@ -264,6 +266,12 @@ async function promptUser(): Promise<ProjectConfig> {
     process.exit(1);
   }
 
+  // Remove products module
+  const removeProductsInput = await question(
+    `${colors.cyan}Remove example Products module?${colors.reset} (Y/n): `
+  );
+  const removeProductsModule = removeProductsInput.toLowerCase() !== 'n';
+
   // Install dependencies
   const installDepsInput = await question(
     `${colors.cyan}Install dependencies now?${colors.reset} (Y/n): `
@@ -288,6 +296,7 @@ async function promptUser(): Promise<ProjectConfig> {
     dbPassword,
     dbHost,
     dbPort,
+    removeProductsModule,
     installDeps,
   };
 }
@@ -543,17 +552,20 @@ function cleanupPackageJson(rootDir: string): void {
   }
 }
 
-function cleanupBoilerplateFiles(rootDir: string): void {
+function cleanupBoilerplateFiles(config: ProjectConfig, rootDir: string): void {
   log.title('🧹 Cleaning up boilerplate files...');
 
   const filesToRemove = [
-    'src/products',
-    'e2e/products.spec.ts',
     '~REVIEW.md',
     '~ROADMAP.md',
     '~ROADMAPv2.md',
     'init.ts', // Remove this script after execution
   ];
+
+  // Add products module files only if user wants to remove them
+  if (config.removeProductsModule) {
+    filesToRemove.push('src/products', 'e2e/products.spec.ts');
+  }
 
   for (const file of filesToRemove) {
     const filePath = join(rootDir, file);
@@ -673,6 +685,10 @@ async function main(): Promise<void> {
     console.log(`  Database:            ${dbDisplay}`);
 
     console.log(
+      `  Remove Products:     ${config.removeProductsModule ? `${colors.green}Yes${colors.reset}` : `${colors.yellow}No (keep for reference)${colors.reset}`}`
+    );
+
+    console.log(
       `  Git Origin:          ${config.gitOrigin || `${colors.dim}Not set${colors.reset}`}`
     );
     console.log();
@@ -696,7 +712,7 @@ async function main(): Promise<void> {
     installDependencies(config, rootDir);
 
     // Cleanup boilerplate files BEFORE git commit
-    cleanupBoilerplateFiles(rootDir);
+    cleanupBoilerplateFiles(config, rootDir);
 
     // Setup database
     await setupDatabase(config, rootDir);
