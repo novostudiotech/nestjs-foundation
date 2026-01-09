@@ -62,17 +62,42 @@ This boilerplate includes a `Products` module (`src/products/`) as a **demonstra
 
 ### Installation
 
+<!-- remove_after_init_start -->
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd nestjs-foundation
+git clone git@github.com:novostudiotech/nestjs-foundation.git my-project
+cd my-project
 
+# Run initialization wizard
+pnpm init:project
+```
+
+The wizard will:
+- Ask for project details (name, slug, description, author)
+- Show preview of all changes before applying
+- Set up database (local Docker or custom connection)
+- Generate AUTH_SECRET automatically
+- Create and configure .env file
+- Replace boilerplate names with your project names
+- Initialize fresh git repository with new origin
+- Install dependencies and run migrations (optional)
+- Clean up boilerplate files
+
+After initialization:
+<!-- remove_after_init_end -->
+
+```bash
 # Install dependencies
 pnpm install
 
-# Setup environment variables
+# Setup environment
 cp .env.example .env
-# Edit .env with your configuration
+# Edit .env with your values
+```
+
+```bash
+# Start development server
+pnpm dev
 ```
 
 ### Running the Application

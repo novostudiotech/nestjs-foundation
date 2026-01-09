@@ -1,11 +1,12 @@
 {
   "name": "nestjs-foundation",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Production-ready NestJS boilerplate",
+  "author": "krylov@vasily.dev",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "init:project": "ts-node init.ts",
     "dev": "NODE_OPTIONS='-r dotenv/config' nest start --watch",
     "dev:email": "email dev --dir src/notifications/channels/email/templates --port 3001",
     "build": "nest build",

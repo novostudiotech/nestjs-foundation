@@ -36,11 +36,13 @@ Edit `.env` and set required variables:
 NODE_ENV=development
 APP_ENV=local
 PORT=3000
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation
-TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation?sslmode=disable
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test?sslmode=disable
 AUTH_SECRET=<paste-generated-secret-here>
-APP_NAME=NestJS Foundation
+APP_NAME="NestJS Foundation"
 ```
+
+> **⚠️ Security Warning**: `sslmode=disable` is intended for **local development only** and is insecure for production environments.
 
 **Environment Variables Explained:**
 - `NODE_ENV`: How code runs (development/production/test) - affects build optimizations
