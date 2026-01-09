@@ -55,6 +55,8 @@ const log = {
   preview: (msg: string): void => console.log(`${colors.yellow}  ${msg}${colors.reset}`),
 };
 
+type DatabaseSetupType = 'docker' | 'local';
+
 interface ProjectConfig {
   projectName: string;
   projectSlug: string;
@@ -66,7 +68,11 @@ interface ProjectConfig {
   authSecret: string;
   appName: string;
   gitOrigin: string;
-  setupDatabase: boolean;
+  databaseSetup: DatabaseSetupType;
+  dbUsername?: string;
+  dbPassword?: string;
+  dbHost?: string;
+  dbPort?: string;
   installDeps: boolean;
 }
 
@@ -172,21 +178,63 @@ async function promptUser(): Promise<ProjectConfig> {
   const authorName = authorInput.trim() || defaultAuthor;
 
   // Database setup
-  const setupDbInput = await question(
-    `${colors.cyan}Set up local PostgreSQL database?${colors.reset} (y/N): `
+  console.log(`${colors.cyan}Database setup:${colors.reset}`);
+  console.log(
+    `  ${colors.dim}1${colors.reset} - Docker (recommended, runs PostgreSQL in containers on ports 5432/5433)`
   );
-  const setupDatabase = setupDbInput.toLowerCase() === 'y';
+  console.log(
+    `  ${colors.dim}2${colors.reset} - Local (use existing PostgreSQL, will create databases via createdb)`
+  );
 
+  const dbSetupInput = await question(
+    `${colors.cyan}Choose option${colors.reset} (${colors.dim}1${colors.reset}): `
+  );
+
+  let databaseSetup: DatabaseSetupType;
   let databaseUrl: string;
   let testDatabaseUrl: string;
+  let dbUsername: string | undefined;
+  let dbPassword: string | undefined;
+  let dbHost: string | undefined;
+  let dbPort: string | undefined;
 
-  if (setupDatabase) {
+  const dbChoice = dbSetupInput.trim() || '1';
+
+  if (dbChoice === '2') {
+    // Local PostgreSQL setup - will create databases
+    databaseSetup = 'local';
+    log.step('Configuring local PostgreSQL...');
+
+    const dbUsernameInput = await question(
+      `${colors.cyan}PostgreSQL username${colors.reset} (${colors.dim}postgres${colors.reset}): `
+    );
+    dbUsername = dbUsernameInput.trim() || 'postgres';
+
+    const dbPasswordInput = await question(
+      `${colors.cyan}PostgreSQL password${colors.reset} (${colors.dim}postgres${colors.reset}): `
+    );
+    dbPassword = dbPasswordInput.trim() || 'postgres';
+
+    const dbHostInput = await question(
+      `${colors.cyan}PostgreSQL host${colors.reset} (${colors.dim}localhost${colors.reset}): `
+    );
+    dbHost = dbHostInput.trim() || 'localhost';
+
+    const dbPortInput = await question(
+      `${colors.cyan}PostgreSQL port${colors.reset} (${colors.dim}5432${colors.reset}): `
+    );
+    dbPort = dbPortInput.trim() || '5432';
+
+    // Local uses same port, different database names
+    databaseUrl = `postgresql://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${projectSnake}?sslmode=disable`;
+    testDatabaseUrl = `postgresql://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${projectSnake}_test?sslmode=disable`;
+  } else {
+    // Docker setup - just configure .env, docker-compose will handle the rest
+    databaseSetup = 'docker';
     log.step('Using Docker Compose for PostgreSQL...');
+    // Docker uses different ports: 5432 for main, 5433 for test
     databaseUrl = `postgresql://postgres:postgres@localhost:5432/${projectSnake}?sslmode=disable`;
     testDatabaseUrl = `postgresql://postgres:postgres@localhost:5433/${projectSnake}_test?sslmode=disable`;
-  } else {
-    databaseUrl = await question(`${colors.cyan}Database URL${colors.reset}: `);
-    testDatabaseUrl = await question(`${colors.cyan}Test Database URL${colors.reset}: `);
   }
 
   // Auth secret
@@ -235,7 +283,11 @@ async function promptUser(): Promise<ProjectConfig> {
     authSecret,
     appName,
     gitOrigin,
-    setupDatabase,
+    databaseSetup,
+    dbUsername,
+    dbPassword,
+    dbHost,
+    dbPort,
     installDeps,
   };
 }
@@ -539,20 +591,52 @@ function installDependencies(config: ProjectConfig, rootDir: string): void {
 }
 
 async function setupDatabase(config: ProjectConfig, rootDir: string): Promise<void> {
-  if (!config.setupDatabase) {
-    return;
-  }
-
   log.title('🗄️  Setting up database...');
 
   try {
-    log.step('Starting PostgreSQL with Docker Compose...');
-    execSync('docker compose up -d postgres postgres-test', { cwd: rootDir, stdio: 'inherit' });
+    if (config.databaseSetup === 'docker') {
+      // Docker setup - start containers
+      log.step('Starting PostgreSQL with Docker Compose...');
+      execSync('docker compose up -d postgres postgres-test', { cwd: rootDir, stdio: 'inherit' });
 
-    log.step('Waiting for PostgreSQL to be ready...');
-    // Cross-platform wait using Node.js setTimeout
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+      log.step('Waiting for PostgreSQL to be ready...');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    } else if (config.databaseSetup === 'local') {
+      // Local PostgreSQL setup - create databases
+      log.step(`Creating databases: ${config.projectSnake}, ${config.projectSnake}_test...`);
 
+      const username = config.dbUsername || 'postgres';
+      const password = config.dbPassword || 'postgres';
+      const host = config.dbHost || 'localhost';
+      const port = config.dbPort || '5432';
+
+      // Set PGPASSWORD for createdb commands
+      const env = { ...process.env, PGPASSWORD: password };
+
+      try {
+        execSync(`createdb -h ${host} -p ${port} -U ${username} ${config.projectSnake}`, {
+          cwd: rootDir,
+          stdio: 'inherit',
+          env,
+        });
+        log.success(`Database ${config.projectSnake} created!`);
+      } catch {
+        log.warning(`Database ${config.projectSnake} might already exist or createdb failed.`);
+      }
+
+      try {
+        execSync(`createdb -h ${host} -p ${port} -U ${username} ${config.projectSnake}_test`, {
+          cwd: rootDir,
+          stdio: 'inherit',
+          env,
+        });
+        log.success(`Database ${config.projectSnake}_test created!`);
+      } catch {
+        log.warning(`Database ${config.projectSnake}_test might already exist or createdb failed.`);
+      }
+    }
+
+    // Run migrations for both docker and local setups
     log.step('Running database migrations...');
     execSync('pnpm migration:run', { cwd: rootDir, stdio: 'inherit' });
 
@@ -578,9 +662,16 @@ async function main(): Promise<void> {
     console.log(
       `  Author:              ${config.authorName || `${colors.dim}Not set${colors.reset}`}`
     );
-    console.log(
-      `  Database:            ${config.setupDatabase ? `${colors.green}Local (Docker)${colors.reset}` : `${colors.yellow}Custom${colors.reset}`}`
-    );
+
+    // Database setup display
+    let dbDisplay = '';
+    if (config.databaseSetup === 'docker') {
+      dbDisplay = `${colors.green}Docker${colors.reset} (ports 5432/5433)`;
+    } else if (config.databaseSetup === 'local') {
+      dbDisplay = `${colors.green}Local PostgreSQL${colors.reset} (${config.dbUsername}@${config.dbHost}:${config.dbPort})`;
+    }
+    console.log(`  Database:            ${dbDisplay}`);
+
     console.log(
       `  Git Origin:          ${config.gitOrigin || `${colors.dim}Not set${colors.reset}`}`
     );
@@ -651,21 +742,18 @@ async function main(): Promise<void> {
     }
 
     log.info('Next steps:');
+    let stepNum = 1;
+
     if (!config.installDeps) {
-      console.log(`  1. ${colors.dim}pnpm install${colors.reset}`);
+      console.log(`  ${stepNum}. ${colors.dim}pnpm install${colors.reset}`);
+      stepNum++;
     }
-    if (!config.setupDatabase) {
-      console.log(
-        `  ${config.installDeps ? '1' : '2'}. ${colors.dim}Set up your database${colors.reset}`
-      );
-    }
-    console.log(
-      `  ${config.installDeps && config.setupDatabase ? '1' : '2'}. ${colors.dim}pnpm dev${colors.reset}`
-    );
+
+    console.log(`  ${stepNum}. ${colors.dim}pnpm dev${colors.reset}`);
+    stepNum++;
+
     if (config.gitOrigin) {
-      console.log(
-        `  ${config.installDeps && config.setupDatabase ? '2' : '3'}. ${colors.dim}git push -u origin main${colors.reset}`
-      );
+      console.log(`  ${stepNum}. ${colors.dim}git push -u origin main${colors.reset}`);
     }
     console.log();
     log.success('Happy coding! 🚀');
