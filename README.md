@@ -62,13 +62,11 @@ This boilerplate includes a `Products` module (`src/products/`) as a **demonstra
 
 ### Installation
 
+<!-- remove_after_init_start -->
 ```bash
 # Clone the repository
 git clone git@github.com:novostudiotech/nestjs-foundation.git my-project
 cd my-project
-
-# Install dependencies
-pnpm install
 
 # Run initialization wizard
 pnpm init:project
@@ -86,6 +84,16 @@ The wizard will:
 - Clean up boilerplate files
 
 After initialization:
+<!-- remove_after_init_end -->
+
+```bash
+# Install dependencies
+pnpm install
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your values
+```
 
 ```bash
 # Start development server

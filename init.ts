@@ -6,10 +6,11 @@
  * It will:
  * 1. Ask for project details (name, slug, database, etc.)
  * 2. Replace boilerplate values with your project values in files
- * 3. Set up environment files
- * 4. Initialize git with new origin
- * 5. Install dependencies (optional)
- * 6. Run database migrations (optional)
+ * 3. Remove boilerplate-specific sections (marked with remove_after_init_start/end)
+ * 4. Set up environment files
+ * 5. Initialize git with new origin
+ * 6. Install dependencies (optional)
+ * 7. Run database migrations (optional)
  *
  * Usage:
  *   pnpm init:project
@@ -18,6 +19,11 @@
  *
  * The boilerplate works out of the box with default values.
  * Running this script is optional but recommended for new projects.
+ *
+ * Marker Format:
+ *   Use <!-- remove_after_init_start --> and <!-- remove_after_init_end -->
+ *   to mark sections that should be removed after initialization.
+ *   This is similar to CRA's eject mechanism.
  */
 
 import { execSync } from 'node:child_process';
@@ -266,6 +272,17 @@ function smartReplace(filePath: string, replacements: ReplacementMap, preview: b
   let newContent = content;
   let hasChanges = false;
   const changes: string[] = [];
+
+  // Remove sections marked for removal after initialization
+  const initPattern = /<!-- remove_after_init_start -->[\s\S]*?<!-- remove_after_init_end -->\n?/g;
+  const initMatches = newContent.match(initPattern);
+  if (initMatches && initMatches.length > 0) {
+    newContent = newContent.replace(initPattern, '');
+    hasChanges = true;
+    changes.push(
+      `Removed ${initMatches.length} boilerplate section${initMatches.length > 1 ? 's' : ''}`
+    );
+  }
 
   // Apply exact replacements
   for (const { from, to } of replacements.exact) {
