@@ -22,7 +22,7 @@
 
 import { execSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import * as readline from 'node:readline';
 
@@ -264,8 +264,6 @@ function smartReplace(filePath: string, replacements: ReplacementMap, preview: b
     return false;
   }
 
-  // Read file and store its mtime for race condition check
-  const statBefore = statSync(filePath);
   const content = readFileSync(filePath, 'utf-8');
   let newContent = content;
   let hasChanges = false;
@@ -306,12 +304,6 @@ function smartReplace(filePath: string, replacements: ReplacementMap, preview: b
   }
 
   if (hasChanges && !preview) {
-    // Check if file was modified since we read it
-    const statAfter = statSync(filePath);
-    if (statBefore.mtimeMs !== statAfter.mtimeMs) {
-      log.warning(`File ${filePath} was modified during processing, skipping write`);
-      return false;
-    }
     writeFileSync(filePath, newContent, 'utf-8');
   }
 
@@ -379,8 +371,7 @@ function setupEnvironment(config: ProjectConfig, rootDir: string): void {
     return;
   }
 
-  // Read .env.example and store its mtime for race condition check
-  const statBefore = statSync(envExamplePath);
+  // Copy .env.example to .env and apply replacements
   let envContent = readFileSync(envExamplePath, 'utf-8');
 
   // Replace database URLs
@@ -401,13 +392,6 @@ function setupEnvironment(config: ProjectConfig, rootDir: string): void {
 
   // Replace APP_NAME
   envContent = envContent.replace(/APP_NAME="NestJS Foundation"/g, `APP_NAME="${config.appName}"`);
-
-  // Check if file was modified since we read it
-  const statAfter = statSync(envExamplePath);
-  if (statBefore.mtimeMs !== statAfter.mtimeMs) {
-    log.warning('.env.example was modified during processing, aborting');
-    return;
-  }
 
   writeFileSync(envPath, envContent, 'utf-8');
   log.success('.env file created!');
