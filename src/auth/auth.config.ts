@@ -51,12 +51,13 @@ export function getBetterAuthConfig({
     }),
     secret,
     basePath: '/auth',
+    trustedOrigins: ['http://localhost:*', 'http://127.0.0.1:*'],
     hooks: {}, // minimum required to use hook decorators
     emailAndPassword: {
       enabled: true,
     },
     plugins: [
-      openAPI(),
+      openAPI({ disableDefaultReference: true }),
       emailOTP({
         otpLength: 6,
         expiresIn: otpExpiresIn,

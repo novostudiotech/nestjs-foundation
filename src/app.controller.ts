@@ -10,7 +10,7 @@ import { AppService } from '#/app.service';
  * see the [Products module](src/products/).
  *
  */
-@ApiTags('app')
+@ApiTags('App')
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}

@@ -274,20 +274,20 @@ function ensureResponses(
 /**
  * Adds Auth tag and ensures responses exist for all operations in a path item
  */
-function addAuthTag(pathItem: Path): Path {
+function addAuthTag(pathItem: Path, { force = false }: { force?: boolean } = {}): Path {
   const updated: Path = {};
 
   if (pathItem.get) {
     updated.get = ensureResponses({
       ...pathItem.get,
-      tags: pathItem.get.tags ?? ['Auth'],
+      tags: force ? ['Auth'] : (pathItem.get.tags ?? ['Auth']),
     });
   }
 
   if (pathItem.post) {
     updated.post = ensureResponses({
       ...pathItem.post,
-      tags: pathItem.post.tags ?? ['Auth'],
+      tags: force ? ['Auth'] : (pathItem.post.tags ?? ['Auth']),
     });
   }
 
@@ -452,13 +452,14 @@ export async function generateBetterAuthOpenAPISchema(
     for (const [path, pathItem] of Object.entries(betterAuthSchema.paths)) {
       if (pathItem) {
         const prefixedPath = prefixPath(path, basePath);
-        authPaths[prefixedPath] = addAuthTag(pathItem);
+        authPaths[prefixedPath] = addAuthTag(pathItem, { force: true });
       }
     }
 
     // Convert to NestJS Swagger compatible format
     return convertToNestJSOpenAPI({
       ...betterAuthSchema,
+      tags: [{ name: 'Auth', description: '' }],
       paths: authPaths,
     });
   } catch (error) {
