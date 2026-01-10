@@ -50,6 +50,19 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/*.spec.ts", "e2e/**/*.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off"
+          }
+        }
+      }
     }
   ],
   "javascript": {
