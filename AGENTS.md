@@ -389,6 +389,7 @@ Enforced via commitlint + Husky pre-commit hooks.
 - **Metrics**: `/metrics` endpoint (Prometheus format)
 - **Better Auth**: Routes at `/auth/*` (sign-up, sign-in, session)
 - **Patches**: Two patches applied via pnpm (see `docs/working-with-patches.md`)
+- **GitHub Setup**: After pushing to GitHub, enable security scanning and code quality features (see `SETUP.md#github-repository-setup`)
 
 ## Quick Reference
 
