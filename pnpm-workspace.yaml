@@ -9,5 +9,5 @@ onlyBuiltDependencies:
 
 patchedDependencies:
   '@thallesp/nestjs-better-auth': patches/@thallesp__nestjs-better-auth+2.2.0.patch
-  better-auth@1.4.10: patches/better-auth@1.4.10.patch
+  better-auth@1.4.10: patches/better-auth+1.4.10.patch
   better-call: patches/better-call+1.1.7.patch

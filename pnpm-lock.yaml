@@ -10,7 +10,7 @@ patchedDependencies:
     path: patches/@thallesp__nestjs-better-auth+2.2.0.patch
   better-auth@1.4.10:
     hash: 7a67dd378190629498ccc750889c1328025e326faeba030fdf68ffdae7df0b6c
-    path: patches/better-auth@1.4.10.patch
+    path: patches/better-auth+1.4.10.patch
   better-call:
     hash: 0df5b19d7d28f52a50a113219612ad5731276958dcff85cc97ee1192cf4ea829
     path: patches/better-call+1.1.7.patch
