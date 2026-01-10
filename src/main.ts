@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { ConfigService } from '#/app/config';
+import { getCorsOptions } from '#/app/cors';
 import { GlobalExceptionFilter } from '#/app/filters/global-exception.filter';
 import { mergeOpenAPIDocuments } from '#/app/swagger/openapi-merge.util';
 import { AppModule } from '#/app.module';
@@ -66,27 +67,10 @@ async function bootstrap() {
   // Get config service for CORS configuration and global filter
   const configService = app.get(ConfigService);
 
-  // Setup CORS - use validated env variable
-  const corsOriginEnv = configService.get<string>('CORS_ORIGIN');
-  let corsOrigin: string | boolean | string[];
-
-  if (!corsOriginEnv) {
-    corsOrigin = true; // Allow all origins by default
-  } else if (corsOriginEnv === 'true') {
-    corsOrigin = true;
-  } else if (corsOriginEnv === 'false') {
-    corsOrigin = false;
-  } else {
-    // Support comma-separated origins
-    corsOrigin = corsOriginEnv.split(',').map((origin) => origin.trim());
-  }
-
-  app.enableCors({
-    origin: corsOrigin,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  });
+  // Setup CORS with wildcard support (Better Auth-style)
+  const corsOriginsEnv = configService.get<string>('CORS_ORIGINS');
+  const corsOptions = getCorsOptions(corsOriginsEnv);
+  app.enableCors(corsOptions);
 
   // Apply global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter(logger, configService));
