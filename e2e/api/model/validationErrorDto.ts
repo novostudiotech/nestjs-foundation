@@ -5,13 +5,12 @@
  * NestJS Foundation API Documentation
  * OpenAPI spec version: 1.0
  */
-import type { ValidationErrorItemDto } from './validationErrorItemDto';
 
 export interface ValidationErrorDto {
-  /** HTTP status code */
-  statusCode: number;
-  /** Error message */
+  /** Field path (e.g., "email", "user.address.city") */
+  field: string;
+  /** Validation error message */
   message: string;
-  /** Array of validation errors */
-  errors: ValidationErrorItemDto[];
+  /** Validation rule that failed (e.g., "required", "email", "min") */
+  rule?: string;
 }
