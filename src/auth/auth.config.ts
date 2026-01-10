@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth';
 import { emailOTP, openAPI } from 'better-auth/plugins';
 import { Pool } from 'pg';
 import { uuidv7 } from 'uuidv7';
+import { getTrustedOrigins } from '#/app/cors';
 
 /**
  * OTP type from Better Auth emailOTP plugin
@@ -45,13 +46,15 @@ export function getBetterAuthConfig({
   sendOtp,
   otpExpiresIn = 300,
 }: BetterAuthConfigOptions) {
+  const trustedOrigins = getTrustedOrigins(process.env.CORS_ORIGINS);
+
   return betterAuth({
     database: new Pool({
       connectionString: databaseUrl,
     }),
     secret,
     basePath: '/auth',
-    trustedOrigins: ['http://localhost:*', 'http://127.0.0.1:*'],
+    trustedOrigins,
     hooks: {}, // minimum required to use hook decorators
     emailAndPassword: {
       enabled: true,

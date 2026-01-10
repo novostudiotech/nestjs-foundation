@@ -28,7 +28,11 @@ const envSchema = z.object({
 
   PORT: z.coerce.number().int().positive().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
-  CORS_ORIGIN: z.string().optional(),
+  // CORS Origins - supports Better Auth-style wildcards
+  // Examples: 'https://example.com', 'http://localhost:*', 'https://*.example.com'
+  // Multiple: 'https://example.com,https://app.example.com'
+  // Special: 'true' (allow all), 'false' (disable CORS)
+  CORS_ORIGINS: z.string().optional(),
   APP_NAME: z.string().min(1, 'APP_NAME is required'),
 
   // Database
