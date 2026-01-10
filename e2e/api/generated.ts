@@ -14,6 +14,8 @@ import type {
   CreateProductResponseDto,
   DeleteUser200,
   DeleteUserBody,
+  ForgetPasswordWithEmailOTP200,
+  ForgetPasswordWithEmailOTPBody,
   GetAuthAccountInfo200,
   GetAuthDeleteUserCallback200,
   GetAuthDeleteUserCallbackParams,
@@ -28,6 +30,8 @@ import type {
   ListUserAccounts200Item,
   PaginatedProductsResponseDto,
   PatchProductResponseDto,
+  PostAuthEmailOtpVerifyEmail200,
+  PostAuthEmailOtpVerifyEmailBody,
   PostAuthGetAccessToken200,
   PostAuthGetAccessTokenBody,
   PostAuthRefreshToken200,
@@ -48,11 +52,17 @@ import type {
   ResetPasswordBody,
   ResetPasswordCallback200,
   ResetPasswordCallbackParams,
+  ResetPasswordWithEmailOTP200,
+  ResetPasswordWithEmailOTPBody,
+  SendEmailVerificationOTP200,
+  SendEmailVerificationOTPBody,
   SendVerificationEmail200,
   SendVerificationEmailBody,
   Session,
   SignInEmail200,
   SignInEmailBody,
+  SignInWithEmailOTP200,
+  SignInWithEmailOTPBody,
   SignOut200,
   SignOutBody,
   SignUpWithEmailAndPassword200,
@@ -63,6 +73,8 @@ import type {
   UpdateProductResponseDto,
   UpdateUser200,
   UpdateUserBody,
+  VerifyEmailWithOTP200,
+  VerifyEmailWithOTPBody,
 } from './model';
 
 import { request } from './mutator';
@@ -603,6 +615,114 @@ export const getAuthError = (options?: SecondParameter<typeof request<string>>) 
   return request<string>({ url: `/auth/error`, method: 'GET' }, options);
 };
 
+/**
+ * Send a verification OTP to an email
+ */
+export const sendEmailVerificationOTP = (
+  sendEmailVerificationOTPBody: SendEmailVerificationOTPBody,
+  options?: SecondParameter<typeof request<SendEmailVerificationOTP200>>
+) => {
+  return request<SendEmailVerificationOTP200>(
+    {
+      url: `/auth/email-otp/send-verification-otp`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: sendEmailVerificationOTPBody,
+    },
+    options
+  );
+};
+
+/**
+ * Verify an email with an OTP
+ */
+export const verifyEmailWithOTP = (
+  verifyEmailWithOTPBody: VerifyEmailWithOTPBody,
+  options?: SecondParameter<typeof request<VerifyEmailWithOTP200>>
+) => {
+  return request<VerifyEmailWithOTP200>(
+    {
+      url: `/auth/email-otp/check-verification-otp`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: verifyEmailWithOTPBody,
+    },
+    options
+  );
+};
+
+/**
+ * Verify email with OTP
+ */
+export const postAuthEmailOtpVerifyEmail = (
+  postAuthEmailOtpVerifyEmailBody: PostAuthEmailOtpVerifyEmailBody,
+  options?: SecondParameter<typeof request<PostAuthEmailOtpVerifyEmail200>>
+) => {
+  return request<PostAuthEmailOtpVerifyEmail200>(
+    {
+      url: `/auth/email-otp/verify-email`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: postAuthEmailOtpVerifyEmailBody,
+    },
+    options
+  );
+};
+
+/**
+ * Sign in with email and OTP
+ */
+export const signInWithEmailOTP = (
+  signInWithEmailOTPBody: SignInWithEmailOTPBody,
+  options?: SecondParameter<typeof request<SignInWithEmailOTP200>>
+) => {
+  return request<SignInWithEmailOTP200>(
+    {
+      url: `/auth/sign-in/email-otp`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: signInWithEmailOTPBody,
+    },
+    options
+  );
+};
+
+/**
+ * Forget password with email and OTP
+ */
+export const forgetPasswordWithEmailOTP = (
+  forgetPasswordWithEmailOTPBody: ForgetPasswordWithEmailOTPBody,
+  options?: SecondParameter<typeof request<ForgetPasswordWithEmailOTP200>>
+) => {
+  return request<ForgetPasswordWithEmailOTP200>(
+    {
+      url: `/auth/forget-password/email-otp`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: forgetPasswordWithEmailOTPBody,
+    },
+    options
+  );
+};
+
+/**
+ * Reset password with email and OTP
+ */
+export const resetPasswordWithEmailOTP = (
+  resetPasswordWithEmailOTPBody: ResetPasswordWithEmailOTPBody,
+  options?: SecondParameter<typeof request<ResetPasswordWithEmailOTP200>>
+) => {
+  return request<ResetPasswordWithEmailOTP200>(
+    {
+      url: `/auth/email-otp/reset-password`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: resetPasswordWithEmailOTPBody,
+    },
+    options
+  );
+};
+
 export type AppControllerGetHelloResult = NonNullable<
   Awaited<ReturnType<typeof appControllerGetHello>>
 >;
@@ -682,3 +802,17 @@ export type PostAuthGetAccessTokenResult = NonNullable<
 export type GetAuthAccountInfoResult = NonNullable<Awaited<ReturnType<typeof getAuthAccountInfo>>>;
 export type GetAuthOkResult = NonNullable<Awaited<ReturnType<typeof getAuthOk>>>;
 export type GetAuthErrorResult = NonNullable<Awaited<ReturnType<typeof getAuthError>>>;
+export type SendEmailVerificationOTPResult = NonNullable<
+  Awaited<ReturnType<typeof sendEmailVerificationOTP>>
+>;
+export type VerifyEmailWithOTPResult = NonNullable<Awaited<ReturnType<typeof verifyEmailWithOTP>>>;
+export type PostAuthEmailOtpVerifyEmailResult = NonNullable<
+  Awaited<ReturnType<typeof postAuthEmailOtpVerifyEmail>>
+>;
+export type SignInWithEmailOTPResult = NonNullable<Awaited<ReturnType<typeof signInWithEmailOTP>>>;
+export type ForgetPasswordWithEmailOTPResult = NonNullable<
+  Awaited<ReturnType<typeof forgetPasswordWithEmailOTP>>
+>;
+export type ResetPasswordWithEmailOTPResult = NonNullable<
+  Awaited<ReturnType<typeof resetPasswordWithEmailOTP>>
+>;

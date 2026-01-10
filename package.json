@@ -21,7 +21,7 @@
     "test:e2e": "playwright test",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "test:e2e:generate-api": "orval --config orval.config.ts",
+    "test:e2e:generate-api": "rm -rf e2e/api/model e2e/api/generated.ts && orval --config orval.config.ts",
     "prepare": "husky 2>/dev/null || true",
     "typeorm": "NODE_OPTIONS='-r dotenv/config' ts-node node_modules/typeorm/cli",
     "migration:generate": "pnpm typeorm migration:generate -d src/data-source.ts",
