@@ -1,17 +1,16 @@
 import { Heading, Section, Text } from '@react-email/components';
-import type { FC } from 'react';
 import { styles } from '../_components';
-import { BaseLayout } from './base-layout';
+import BaseLayout from './base-layout';
 
 export interface OtpCodeEmailProps {
   /** The one-time password code */
-  otp: string;
+  otp?: string;
   /** Number of minutes until the OTP expires */
-  expiresInMinutes: number;
+  expiresInMinutes?: number;
   /** Application name */
-  appName: string;
+  appName?: string;
   /** Type of OTP for customized messaging */
-  otpType: 'sign-in' | 'email-verification' | 'password-reset';
+  otpType?: 'sign-in' | 'email-verification' | 'password-reset';
   /** Optional logo URL */
   logoUrl?: string;
   /** Optional support email */
@@ -40,14 +39,14 @@ const OTP_MESSAGES = {
  * OTP code email template.
  * Used for sign-in, email verification, and password reset flows.
  */
-export const OtpCodeEmail: FC<OtpCodeEmailProps> = ({
-  otp,
-  expiresInMinutes,
-  appName,
-  otpType,
+export default function OtpCodeEmail({
+  otp = '123456',
+  expiresInMinutes = 10,
+  appName = 'NestJS Foundation',
+  otpType = 'sign-in',
   logoUrl,
   supportEmail,
-}) => {
+}: OtpCodeEmailProps) {
   const messages = OTP_MESSAGES[otpType];
 
   return (
@@ -75,4 +74,4 @@ export const OtpCodeEmail: FC<OtpCodeEmailProps> = ({
       </Text>
     </BaseLayout>
   );
-};
+}

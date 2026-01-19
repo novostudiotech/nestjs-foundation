@@ -126,20 +126,48 @@ const RegisterSchema = z.object({
 });
 ```
 
-### Query Parameters with Defaults
+### Query Parameters with Type Coercion
+
+Query parameters from URLs are always received as strings. Use `z.coerce` to automatically convert them to the correct types:
 
 ```typescript
-const PaginationSchema = z.object({
-  page: z.string().default('1').transform(val => parseInt(val, 10)),
-  limit: z.string().default('10').transform(val => parseInt(val, 10)),
+const QuerySchema = z.object({
+  // Coerce string to number: "1" -> 1, "20" -> 20
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  
+  // Coerce string to boolean: "true" -> true, "false" -> false
+  includeDeleted: z.coerce.boolean().default(false),
+  expandRelations: z.coerce.boolean().default(false),
+  
+  // String parameters don't need coercion
+  search: z.string().optional(),
+  sortBy: z.enum(['name', 'createdAt', 'updatedAt']).default('createdAt'),
 });
 
-class PaginationDto extends createZodDto(PaginationSchema) {}
+class QueryDto extends createZodDto(QuerySchema) {}
 
 @Get()
-findAll(@Query() query: PaginationDto) {
-  // query.page and query.limit are numbers with defaults
+findAll(@Query() query: QueryDto) {
+  // query.page is number (not string!)
+  // query.includeDeleted is boolean (not string!)
+  // query.search is string | undefined
 }
+```
+
+**Why use `z.coerce`?**
+- Without coercion: `?page=1` → validation error (expected number, got string)
+- With coercion: `?page=1` → automatically converts "1" to 1 ✅
+
+**Example requests:**
+```bash
+# All parameters are coerced from strings to correct types
+GET /items?page=2&limit=10&includeDeleted=true
+# → { page: 2, limit: 10, includeDeleted: true }
+
+# Invalid values still trigger validation errors
+GET /items?page=abc
+# → 400 Bad Request: "Invalid input: expected number, received NaN"
 ```
 
 ## Schema Reuse

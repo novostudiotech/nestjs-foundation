@@ -74,7 +74,7 @@ export const styles = {
   } satisfies CSSProperties,
 
   button: {
-    backgroundColor: '#0070f3',
+    backgroundColor: '#000000',
     borderRadius: '6px',
     color: '#ffffff',
     display: 'inline-block',

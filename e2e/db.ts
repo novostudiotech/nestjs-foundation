@@ -23,7 +23,7 @@ let testDataSource: DataSource | null = null;
  * Get or create test database connection
  */
 export async function getTestDataSource(): Promise<DataSource> {
-  if (testDataSource && testDataSource.isInitialized) {
+  if (testDataSource?.isInitialized) {
     return testDataSource;
   }
 
@@ -65,7 +65,7 @@ export async function createDatabaseFixture(): Promise<DatabaseFixture> {
  * Should be called after all tests are done
  */
 export async function closeTestDataSource(): Promise<void> {
-  if (testDataSource && testDataSource.isInitialized) {
+  if (testDataSource?.isInitialized) {
     await testDataSource.destroy();
     testDataSource = null;
   }

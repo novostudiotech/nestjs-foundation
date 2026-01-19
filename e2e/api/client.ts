@@ -38,14 +38,12 @@ export type ApiClient = GeneratedApiFunctions;
 export const createApiClient = (config?: AxiosRequestConfig): ApiClient => {
   const axiosInstance: AxiosInstance = createAxiosInstance(config);
 
-  // biome-ignore lint/suspicious/noExplicitAny: Proxy requires any for dynamic property access
   return new Proxy(generatedApi as any, {
     get(target, prop: string | symbol) {
       const value = target[prop];
 
       // Only wrap functions
       if (typeof value === 'function') {
-        // biome-ignore lint/suspicious/noExplicitAny: Dynamic function wrapping requires any
         return (...args: any[]) => {
           // Generated functions have signature: (body?, params?, options?)
           // The last parameter is always options (SecondParameter<typeof apiClient>)

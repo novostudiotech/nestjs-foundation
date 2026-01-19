@@ -1,4 +1,4 @@
-export { Button, type ButtonProps } from './button';
-export { Footer, type FooterProps } from './footer';
-export { Header, type HeaderProps } from './header';
+export { type ButtonProps, default as Button } from './button';
+export { default as Footer, type FooterProps } from './footer';
+export { default as Header, type HeaderProps } from './header';
 export { styles } from './styles';

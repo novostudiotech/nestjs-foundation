@@ -32,3 +32,31 @@ index af2e728b0126513cba995295888a919cc505de2e..e87eb1df3f0e9acc2c09bf8c70eafb1c
  				type: "object",
  				properties: { success: { type: "boolean" } }
  			} } }
+diff --git a/dist/plugins/open-api/generator.mjs b/dist/plugins/open-api/generator.mjs
+index 58eb98064ef2d586ce402b3782f7b122935a73c5..5d41990b0b8c2a14414caab3661a22ec8f8f44f4 100644
+--- a/dist/plugins/open-api/generator.mjs
++++ b/dist/plugins/open-api/generator.mjs
+@@ -263,6 +263,14 @@ async function generator(ctx, options) {
+ 			};
+ 		});
+ 	}
++	// Filter out the "Function" schema as it conflicts with JavaScript's global Function
++	// This schema is generated when NestJS/Swagger cannot properly process certain DTOs
++	const filteredComponents = {
++		...components,
++		schemas: Object.fromEntries(
++			Object.entries(components.schemas || {}).filter(([key]) => key !== "Function")
++		)
++	};
+ 	return {
+ 		openapi: "3.1.1",
+ 		info: {
+@@ -271,7 +279,7 @@ async function generator(ctx, options) {
+ 			version: "1.1.0"
+ 		},
+ 		components: {
+-			...components,
++			...filteredComponents,
+ 			securitySchemes: {
+ 				apiKeyCookie: {
+ 					type: "apiKey",

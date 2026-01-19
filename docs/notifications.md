@@ -171,6 +171,16 @@ AuthModule.forRootAsync({
 })
 ```
 
+**When OTP emails are sent:**
+
+- **On sign-up**: Automatically sends email verification OTP (`sendVerificationOnSignUp: true` in `auth.config.ts`)
+- **On sign-in**: When user requests OTP via `/auth/email-otp/send-verification-otp`
+- **Password reset**: When user requests password reset via `/auth/forget-password/email-otp`
+
+**Email verification is required:**
+
+Users must verify their email before they can sign in (`requireEmailVerification: true` in `auth.config.ts`). If a user tries to sign in without verifying their email, they will receive a `403` error.
+
 ## Testing
 
 E2E tests in `e2e/notifications.spec.ts`. For real email testing:
