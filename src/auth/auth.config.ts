@@ -111,6 +111,9 @@ export function getBetterAuthConfig({
       database: {
         generateId: () => uuidv7(),
       },
+      // Disable origin check in test environment to allow same-origin requests without Origin header
+      // This is safe for tests as they run in a controlled environment
+      disableOriginCheck: isTest,
     },
   });
 }
