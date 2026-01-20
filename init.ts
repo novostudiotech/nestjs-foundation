@@ -55,6 +55,8 @@ const log = {
   preview: (msg: string): void => console.log(`${colors.yellow}  ${msg}${colors.reset}`),
 };
 
+type DatabaseSetupType = 'docker' | 'local';
+
 interface ProjectConfig {
   projectName: string;
   projectSlug: string;
@@ -66,7 +68,12 @@ interface ProjectConfig {
   authSecret: string;
   appName: string;
   gitOrigin: string;
-  setupDatabase: boolean;
+  databaseSetup: DatabaseSetupType;
+  dbUsername?: string;
+  dbPassword?: string;
+  dbHost?: string;
+  dbPort?: string;
+  removeProductsModule: boolean;
   installDeps: boolean;
 }
 
@@ -91,6 +98,8 @@ const FILES_TO_PROCESS = [
   'docker-compose.yml',
   'SETUP.md',
   'AGENTS.md',
+  'src/app.module.ts',
+  '.github/workflows/cd.yml',
 ];
 
 const rl = readline.createInterface({
@@ -119,6 +128,24 @@ function isValidGitUrl(url: string): boolean {
   // Allow git@github.com:user/repo.git or https://github.com/user/repo.git
   const gitUrlPattern = /^(git@[\w.-]+:[\w./-]+\.git|https:\/\/[\w.-]+\/[\w./-]+\.git)$/;
   return gitUrlPattern.test(url);
+}
+
+function extractGitHubInfo(gitUrl: string): { owner: string; repo: string } | null {
+  // Extract owner and repo from git URL
+  // Supports: git@github.com:owner/repo.git and https://github.com/owner/repo.git
+  const sshPattern = /git@[\w.-]+:([\w-]+)\/([\w.-]+)\.git/;
+  const httpsPattern = /https:\/\/[\w.-]+\/([\w-]+)\/([\w.-]+)\.git/;
+
+  const match = gitUrl.match(sshPattern) || gitUrl.match(httpsPattern);
+
+  if (match) {
+    return {
+      owner: match[1],
+      repo: match[2],
+    };
+  }
+
+  return null;
 }
 
 function generateSecret(): string {
@@ -172,21 +199,63 @@ async function promptUser(): Promise<ProjectConfig> {
   const authorName = authorInput.trim() || defaultAuthor;
 
   // Database setup
-  const setupDbInput = await question(
-    `${colors.cyan}Set up local PostgreSQL database?${colors.reset} (y/N): `
+  console.log(`${colors.cyan}Database setup:${colors.reset}`);
+  console.log(
+    `  ${colors.dim}1${colors.reset} - Docker (recommended, runs PostgreSQL in containers on ports 5432/5433)`
   );
-  const setupDatabase = setupDbInput.toLowerCase() === 'y';
+  console.log(
+    `  ${colors.dim}2${colors.reset} - Local (use existing PostgreSQL, will create databases via createdb)`
+  );
 
+  const dbSetupInput = await question(
+    `${colors.cyan}Choose option${colors.reset} (${colors.dim}1${colors.reset}): `
+  );
+
+  let databaseSetup: DatabaseSetupType;
   let databaseUrl: string;
   let testDatabaseUrl: string;
+  let dbUsername: string | undefined;
+  let dbPassword: string | undefined;
+  let dbHost: string | undefined;
+  let dbPort: string | undefined;
 
-  if (setupDatabase) {
+  const dbChoice = dbSetupInput.trim() || '1';
+
+  if (dbChoice === '2') {
+    // Local PostgreSQL setup - will create databases
+    databaseSetup = 'local';
+    log.step('Configuring local PostgreSQL...');
+
+    const dbUsernameInput = await question(
+      `${colors.cyan}PostgreSQL username${colors.reset} (${colors.dim}postgres${colors.reset}): `
+    );
+    dbUsername = dbUsernameInput.trim() || 'postgres';
+
+    const dbPasswordInput = await question(
+      `${colors.cyan}PostgreSQL password${colors.reset} (${colors.dim}postgres${colors.reset}): `
+    );
+    dbPassword = dbPasswordInput.trim() || 'postgres';
+
+    const dbHostInput = await question(
+      `${colors.cyan}PostgreSQL host${colors.reset} (${colors.dim}localhost${colors.reset}): `
+    );
+    dbHost = dbHostInput.trim() || 'localhost';
+
+    const dbPortInput = await question(
+      `${colors.cyan}PostgreSQL port${colors.reset} (${colors.dim}5432${colors.reset}): `
+    );
+    dbPort = dbPortInput.trim() || '5432';
+
+    // Local uses same port, different database names
+    databaseUrl = `postgresql://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${projectSnake}?sslmode=disable`;
+    testDatabaseUrl = `postgresql://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${projectSnake}_test?sslmode=disable`;
+  } else {
+    // Docker setup - just configure .env, docker-compose will handle the rest
+    databaseSetup = 'docker';
     log.step('Using Docker Compose for PostgreSQL...');
+    // Docker uses different ports: 5432 for main, 5433 for test
     databaseUrl = `postgresql://postgres:postgres@localhost:5432/${projectSnake}?sslmode=disable`;
     testDatabaseUrl = `postgresql://postgres:postgres@localhost:5433/${projectSnake}_test?sslmode=disable`;
-  } else {
-    databaseUrl = await question(`${colors.cyan}Database URL${colors.reset}: `);
-    testDatabaseUrl = await question(`${colors.cyan}Test Database URL${colors.reset}: `);
   }
 
   // Auth secret
@@ -216,6 +285,12 @@ async function promptUser(): Promise<ProjectConfig> {
     process.exit(1);
   }
 
+  // Remove products module
+  const removeProductsInput = await question(
+    `${colors.cyan}Remove example Products module?${colors.reset} (Y/n): `
+  );
+  const removeProductsModule = removeProductsInput.toLowerCase() !== 'n';
+
   // Install dependencies
   const installDepsInput = await question(
     `${colors.cyan}Install dependencies now?${colors.reset} (Y/n): `
@@ -235,7 +310,12 @@ async function promptUser(): Promise<ProjectConfig> {
     authSecret,
     appName,
     gitOrigin,
-    setupDatabase,
+    databaseSetup,
+    dbUsername,
+    dbPassword,
+    dbHost,
+    dbPort,
+    removeProductsModule,
     installDeps,
   };
 }
@@ -274,7 +354,9 @@ function smartReplace(filePath: string, replacements: ReplacementMap, preview: b
   const changes: string[] = [];
 
   // Remove sections marked for removal after initialization
-  const initPattern = /<!-- remove_after_init_start -->[\s\S]*?<!-- remove_after_init_end -->\n?/g;
+  // Supports both HTML comments (<!-- -->) and JS/TS comments (/* */)
+  const initPattern =
+    /(?:<!--\s*remove_after_init_start\s*-->|\/\*\s*remove_after_init_start\s*\*\/)[\s\S]*?(?:<!--\s*remove_after_init_end\s*-->|\/\*\s*remove_after_init_end\s*\*\/)\n?/g;
   const initMatches = newContent.match(initPattern);
   if (initMatches && initMatches.length > 0) {
     newContent = newContent.replace(initPattern, '');
@@ -491,17 +573,21 @@ function cleanupPackageJson(rootDir: string): void {
   }
 }
 
-function cleanupBoilerplateFiles(rootDir: string): void {
+function cleanupBoilerplateFiles(config: ProjectConfig, rootDir: string): void {
   log.title('🧹 Cleaning up boilerplate files...');
 
   const filesToRemove = [
-    'src/products',
-    'e2e/products.spec.ts',
     '~REVIEW.md',
     '~ROADMAP.md',
     '~ROADMAPv2.md',
+    '.github/workflows/codeql.yml', // CodeQL is paid for private repos
     'init.ts', // Remove this script after execution
   ];
+
+  // Add products module files only if user wants to remove them
+  if (config.removeProductsModule) {
+    filesToRemove.push('src/products', 'e2e/products.spec.ts');
+  }
 
   for (const file of filesToRemove) {
     const filePath = join(rootDir, file);
@@ -539,20 +625,52 @@ function installDependencies(config: ProjectConfig, rootDir: string): void {
 }
 
 async function setupDatabase(config: ProjectConfig, rootDir: string): Promise<void> {
-  if (!config.setupDatabase) {
-    return;
-  }
-
   log.title('🗄️  Setting up database...');
 
   try {
-    log.step('Starting PostgreSQL with Docker Compose...');
-    execSync('docker compose up -d postgres postgres-test', { cwd: rootDir, stdio: 'inherit' });
+    if (config.databaseSetup === 'docker') {
+      // Docker setup - start containers
+      log.step('Starting PostgreSQL with Docker Compose...');
+      execSync('docker compose up -d postgres postgres-test', { cwd: rootDir, stdio: 'inherit' });
 
-    log.step('Waiting for PostgreSQL to be ready...');
-    // Cross-platform wait using Node.js setTimeout
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+      log.step('Waiting for PostgreSQL to be ready...');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    } else if (config.databaseSetup === 'local') {
+      // Local PostgreSQL setup - create databases
+      log.step(`Creating databases: ${config.projectSnake}, ${config.projectSnake}_test...`);
 
+      const username = config.dbUsername || 'postgres';
+      const password = config.dbPassword || 'postgres';
+      const host = config.dbHost || 'localhost';
+      const port = config.dbPort || '5432';
+
+      // Set PGPASSWORD for createdb commands
+      const env = { ...process.env, PGPASSWORD: password };
+
+      try {
+        execSync(`createdb -h ${host} -p ${port} -U ${username} ${config.projectSnake}`, {
+          cwd: rootDir,
+          stdio: 'inherit',
+          env,
+        });
+        log.success(`Database ${config.projectSnake} created!`);
+      } catch {
+        log.warning(`Database ${config.projectSnake} might already exist or createdb failed.`);
+      }
+
+      try {
+        execSync(`createdb -h ${host} -p ${port} -U ${username} ${config.projectSnake}_test`, {
+          cwd: rootDir,
+          stdio: 'inherit',
+          env,
+        });
+        log.success(`Database ${config.projectSnake}_test created!`);
+      } catch {
+        log.warning(`Database ${config.projectSnake}_test might already exist or createdb failed.`);
+      }
+    }
+
+    // Run migrations for both docker and local setups
     log.step('Running database migrations...');
     execSync('pnpm migration:run', { cwd: rootDir, stdio: 'inherit' });
 
@@ -578,9 +696,20 @@ async function main(): Promise<void> {
     console.log(
       `  Author:              ${config.authorName || `${colors.dim}Not set${colors.reset}`}`
     );
+
+    // Database setup display
+    let dbDisplay = '';
+    if (config.databaseSetup === 'docker') {
+      dbDisplay = `${colors.green}Docker${colors.reset} (ports 5432/5433)`;
+    } else if (config.databaseSetup === 'local') {
+      dbDisplay = `${colors.green}Local PostgreSQL${colors.reset} (${config.dbUsername}@${config.dbHost}:${config.dbPort})`;
+    }
+    console.log(`  Database:            ${dbDisplay}`);
+
     console.log(
-      `  Database:            ${config.setupDatabase ? `${colors.green}Local (Docker)${colors.reset}` : `${colors.yellow}Custom${colors.reset}`}`
+      `  Remove Products:     ${config.removeProductsModule ? `${colors.green}Yes${colors.reset}` : `${colors.yellow}No (keep for reference)${colors.reset}`}`
     );
+
     console.log(
       `  Git Origin:          ${config.gitOrigin || `${colors.dim}Not set${colors.reset}`}`
     );
@@ -605,7 +734,7 @@ async function main(): Promise<void> {
     installDependencies(config, rootDir);
 
     // Cleanup boilerplate files BEFORE git commit
-    cleanupBoilerplateFiles(rootDir);
+    cleanupBoilerplateFiles(config, rootDir);
 
     // Setup database
     await setupDatabase(config, rootDir);
@@ -617,18 +746,49 @@ async function main(): Promise<void> {
     log.title('🎉 Project initialized successfully!');
     console.log(`Your project ${colors.bright}${config.projectName}${colors.reset} is ready!`);
     console.log();
-    log.info('Next steps:');
-    if (!config.installDeps) {
-      console.log(`  1. ${colors.dim}pnpm install${colors.reset}`);
-    }
-    if (!config.setupDatabase) {
+
+    // GitHub setup reminder
+    if (config.gitOrigin) {
+      const githubInfo = extractGitHubInfo(config.gitOrigin);
+      const repoPath = githubInfo ? `${githubInfo.owner}/${githubInfo.repo}` : 'YOUR_ORG/YOUR_REPO';
+
+      log.title('⚙️  GitHub Repository Setup Required');
+      log.warning('After pushing to GitHub, enable these settings for full CI/CD:');
+      console.log();
+      console.log(`  ${colors.bright}1. Code Security & Analysis${colors.reset}`);
       console.log(
-        `  ${config.installDeps ? '1' : '2'}. ${colors.dim}Set up your database${colors.reset}`
+        `     ${colors.dim}https://github.com/${repoPath}/settings/security_analysis${colors.reset}`
       );
+      console.log(`     • Enable Dependency graph`);
+      console.log(`     • Enable Dependabot alerts`);
+      console.log(`     • Enable Secret scanning`);
+      console.log();
+      console.log(`  ${colors.bright}2. Actions Permissions${colors.reset}`);
+      console.log(
+        `     ${colors.dim}https://github.com/${repoPath}/settings/actions${colors.reset}`
+      );
+      console.log(`     • Set "Read and write permissions"`);
+      console.log(`     • Enable "Allow GitHub Actions to create and approve pull requests"`);
+      console.log();
+      log.info('These settings enable security scanning (Trivy, TruffleHog) and CI/CD.');
+      log.info('See SETUP.md for detailed instructions.');
+      console.log();
     }
-    console.log(
-      `  ${config.installDeps && config.setupDatabase ? '1' : '2'}. ${colors.dim}pnpm dev${colors.reset}`
-    );
+
+    log.info('Next steps:');
+    let stepNum = 1;
+
+    if (!config.installDeps) {
+      console.log(`  ${stepNum}. ${colors.dim}pnpm install${colors.reset}`);
+      stepNum++;
+    }
+
+    console.log(`  ${stepNum}. ${colors.dim}pnpm dev${colors.reset}`);
+    stepNum++;
+
+    if (config.gitOrigin) {
+      console.log(`  ${stepNum}. ${colors.dim}git push -u origin main${colors.reset}`);
+    }
     console.log();
     log.success('Happy coding! 🚀');
   } catch (error) {
