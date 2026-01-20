@@ -1,13 +1,14 @@
 import { Heading, Text } from '@react-email/components';
-import type { FC } from 'react';
-import { Button, styles } from '../_components';
-import { BaseLayout } from './base-layout';
+import type { CSSProperties } from 'react';
+import { styles } from '../_components';
+import Button from '../_components/button';
+import BaseLayout from './base-layout';
 
 export interface WelcomeEmailProps {
   /** User's display name (optional) */
   userName?: string;
   /** Application name */
-  appName: string;
+  appName?: string;
   /** URL to the dashboard or getting started page */
   dashboardUrl?: string;
   /** Optional logo URL */
@@ -19,13 +20,13 @@ export interface WelcomeEmailProps {
 /**
  * Welcome email template sent after successful registration.
  */
-export const WelcomeEmail: FC<WelcomeEmailProps> = ({
-  userName,
-  appName,
-  dashboardUrl,
+export default function WelcomeEmail({
+  userName = 'Dancer',
+  appName = 'NestJS Foundation',
+  dashboardUrl = 'https://nestjsfoundation.com/dashboard',
   logoUrl,
   supportEmail,
-}) => {
+}: WelcomeEmailProps) {
   const greeting = userName ? `Hi ${userName}` : 'Hi there';
 
   return (
@@ -47,10 +48,10 @@ export const WelcomeEmail: FC<WelcomeEmailProps> = ({
 
       {dashboardUrl && <Button href={dashboardUrl}>Get Started</Button>}
 
-      <Text style={styles.textMuted as React.CSSProperties}>
+      <Text style={styles.textMuted as CSSProperties}>
         If you have any questions or need help getting started, don't hesitate to reach out to our
         support team.
       </Text>
     </BaseLayout>
   );
-};
+}

@@ -47,6 +47,7 @@ export function getBetterAuthConfig({
   otpExpiresIn = 300,
 }: BetterAuthConfigOptions) {
   const trustedOrigins = getTrustedOrigins(process.env.CORS_ORIGINS);
+  const isTest = process.env.NODE_ENV === 'test';
 
   return betterAuth({
     database: new Pool({
@@ -58,12 +59,14 @@ export function getBetterAuthConfig({
     hooks: {}, // minimum required to use hook decorators
     emailAndPassword: {
       enabled: true,
+      requireEmailVerification: !isTest, // Disable email verification in test environment
     },
     plugins: [
       openAPI({ disableDefaultReference: true }),
       emailOTP({
         otpLength: 6,
         expiresIn: otpExpiresIn,
+        sendVerificationOnSignUp: !isTest, // Don't send OTP emails in test environment
         async sendVerificationOTP({ email, otp, type }) {
           if (sendOtp) {
             // Don't await to avoid timing attacks (as recommended by Better Auth docs)

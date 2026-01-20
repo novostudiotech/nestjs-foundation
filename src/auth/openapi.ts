@@ -67,6 +67,7 @@ const VALID_SWAGGER_TYPES = ['string', 'number', 'integer', 'boolean', 'array', 
  * Removes invalid type definitions and recursively processes nested properties
  * Fixes issues where type is an array (e.g., ["string", "null"]) which is not valid in OpenAPI
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Schema normalization requires complex recursive logic
 function normalizeSchemaRecursive(schema: unknown): unknown {
   if (!schema || typeof schema !== 'object') {
     return schema;
@@ -85,7 +86,7 @@ function normalizeSchemaRecursive(schema: unknown): unknown {
 
       if (nonNullTypes.length === 0) {
         // Only null, remove type
-        delete normalized.type;
+        normalized.type = undefined;
       } else if (nonNullTypes.length === 1) {
         // Single type with optional null
         const singleType = nonNullTypes[0];
@@ -99,7 +100,7 @@ function normalizeSchemaRecursive(schema: unknown): unknown {
           }
         } else {
           // Invalid type, remove it
-          delete normalized.type;
+          normalized.type = undefined;
         }
       } else {
         // Multiple types - use oneOf (but this is complex, so for now just use the first valid type)
@@ -114,18 +115,18 @@ function normalizeSchemaRecursive(schema: unknown): unknown {
             normalized.nullable = true;
           }
         } else {
-          delete normalized.type;
+          normalized.type = undefined;
         }
       }
     } else if (typeof normalized.type === 'string') {
       // Type is a string, validate it
       if (!VALID_SWAGGER_TYPES.includes(normalized.type as (typeof VALID_SWAGGER_TYPES)[number])) {
         // Remove invalid type
-        delete normalized.type;
+        normalized.type = undefined;
       }
     } else {
       // Type is neither string nor array, remove it
-      delete normalized.type;
+      normalized.type = undefined;
     }
   }
 
@@ -172,6 +173,7 @@ function normalizeRequestBodySchema(schema: unknown): unknown {
 /**
  * Normalizes requestBody to fix Swagger validation errors
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Request body normalization requires complex logic
 function normalizeRequestBody(requestBody: unknown): unknown {
   if (!requestBody || typeof requestBody !== 'object') {
     return requestBody;
@@ -324,6 +326,7 @@ function normalizeParameters(parameters: unknown): unknown {
  * Converts Better Auth Path to NestJS Swagger PathItemObject
  * Ensures all operations have required responses property
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Path conversion requires complex operation handling
 function convertPathToPathItemObject(pathItem: Path): PathItemObject {
   const converted: PathItemObject = {};
 

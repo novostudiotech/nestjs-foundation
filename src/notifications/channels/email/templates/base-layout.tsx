@@ -1,14 +1,16 @@
 import { Body, Container, Head, Html, Preview } from '@react-email/components';
-import type { FC, ReactNode } from 'react';
-import { Footer, Header, styles } from '../_components';
+import type { ReactNode } from 'react';
+import { styles } from '../_components';
+import Footer from '../_components/footer';
+import Header from '../_components/header';
 
 export interface BaseLayoutProps {
   /** Application name */
-  appName: string;
+  appName?: string;
   /** Preview text shown in email clients */
-  previewText: string;
+  previewText?: string;
   /** Email content */
-  children: ReactNode;
+  children?: ReactNode;
   /** Optional logo URL */
   logoUrl?: string;
   /** Optional support email for footer */
@@ -21,23 +23,25 @@ export interface BaseLayoutProps {
  * Base layout for all email templates.
  * Provides consistent structure with header, content area, and footer.
  */
-export const BaseLayout: FC<BaseLayoutProps> = ({
-  appName,
-  previewText,
+export default function BaseLayout({
+  appName = 'NestJS Foundation',
+  previewText = 'Email from NestJS Foundation',
   children,
   logoUrl,
   supportEmail,
   language = 'en',
-}) => (
-  <Html lang={language}>
-    <Head />
-    <Preview>{previewText}</Preview>
-    <Body style={styles.body}>
-      <Container style={styles.container}>
-        <Header appName={appName} logoUrl={logoUrl} />
-        {children}
-        <Footer appName={appName} supportEmail={supportEmail} />
-      </Container>
-    </Body>
-  </Html>
-);
+}: BaseLayoutProps) {
+  return (
+    <Html lang={language}>
+      <Head />
+      <Preview>{previewText}</Preview>
+      <Body style={styles.body}>
+        <Container style={styles.container}>
+          <Header appName={appName} logoUrl={logoUrl} />
+          {children}
+          <Footer appName={appName} supportEmail={supportEmail} />
+        </Container>
+      </Body>
+    </Html>
+  );
+}

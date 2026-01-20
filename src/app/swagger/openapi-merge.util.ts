@@ -39,6 +39,7 @@ function mergeComponents(
 /**
  * Merges tags from source into target, avoiding duplicates
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: OpenAPI merging requires complex logic
 function mergeTags(
   target: OpenAPIObject['tags'],
   source: OpenAPIObject['tags']
@@ -142,6 +143,7 @@ function mergeSecurity(
  * Merges paths from source into target, combining operations for matching paths
  * When the same path exists in both documents, operations are merged rather than replaced
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: OpenAPI path merging requires complex logic
 function mergePaths(
   target: OpenAPIObject['paths'],
   source: OpenAPIObject['paths']
@@ -195,6 +197,7 @@ function mergePaths(
         const paramMap = new Map<string, ParameterItem>();
 
         // Helper to add parameters to map
+        // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Parameter deduplication requires complex logic
         const addParameters = (params: typeof targetPathItem.parameters) => {
           if (!params) return;
           for (const param of params) {
@@ -247,6 +250,7 @@ function mergePaths(
  * @param source - Source document to merge into target
  * @returns The merged document (same reference as target)
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: OpenAPI document merging requires complex logic
 export function mergeOpenAPIDocuments(target: OpenAPIObject, source: OpenAPIObject): OpenAPIObject {
   // Merge paths (combining operations for matching paths)
   // Only merge if source has paths
