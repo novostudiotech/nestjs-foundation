@@ -129,7 +129,8 @@ jobs:
     timeout-minutes: 15
 
     env:
-      NODE_ENV: test
+      APP_ENV: test
+      NODE_ENV: production
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:54320/nestjs_foundation_test
 
     services:
@@ -170,9 +171,6 @@ jobs:
 
       - name: Run E2E tests
         run: pnpm test:e2e
-        env:
-          CI: true
-          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:54320/nestjs_foundation_test
 
   docker-build-and-scan:
     name: Docker Build and Security Scan

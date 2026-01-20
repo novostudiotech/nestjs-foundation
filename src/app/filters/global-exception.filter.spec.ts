@@ -214,8 +214,8 @@ describe('GlobalExceptionFilter', () => {
         })
       );
 
-      // Column and constraint are always exposed (safe for production)
-      // Table is only exposed in non-production environments
+      // Column and constraint are always exposed (safe for prod)
+      // Table is only exposed in non-prod environments
       const response = mockResponse.json.mock.calls[0][0];
       expect(response.details?.column).toBe('email');
       expect(response.details?.constraint).toBe('users_email_key');

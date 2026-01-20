@@ -7,6 +7,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AppConfigModule, ConfigService, getDatabaseConfig, getLoggerConfig } from '#/app/config';
+import { getTrustedOrigins } from '#/app/cors';
 import { HealthModule } from '#/app/health/health.module';
 import { MetricsController } from '#/app/metrics/metrics.controller';
 import { AppController } from '#/app.controller';
@@ -32,12 +33,15 @@ import { ProductsModule } from '#/products/products.module';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
+        const appEnv = configService.get('APP_ENV');
         const config = getDatabaseConfig(databaseUrl);
 
         return {
           ...config,
-          // In development we want to see error messages right away and not wait for all the retries to fail
-          retryAttempts: process.env.NODE_ENV === 'production' ? 3 : 0,
+          // Retry connections based on where code is deployed (APP_ENV)
+          // Production-like environments (production, stage) = retries for reliability
+          // Development/test environments = fail fast for immediate feedback
+          retryAttempts: ['prod', 'stage'].includes(appEnv) ? 3 : 0,
         };
       },
       // dataSource receives the configured DataSourceOptions
@@ -67,6 +71,8 @@ import { ProductsModule } from '#/products/products.module';
       useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         const secret = configService.get('AUTH_SECRET');
+        const corsOriginsString = configService.get('CORS_ORIGINS') || '';
+        const appEnv = configService.get('APP_ENV');
 
         // Map Better Auth OTP types to notification types
         const otpTypeMap: Record<BetterAuthOtpType, NotificationType> = {
@@ -79,6 +85,9 @@ import { ProductsModule } from '#/products/products.module';
           auth: getBetterAuthConfig({
             databaseUrl,
             secret,
+            trustedOrigins: getTrustedOrigins(corsOriginsString),
+            isTest: appEnv === 'test',
+            isProd: appEnv === 'prod',
             sendOtp: async ({ email, otp, type }) => {
               const notificationType = otpTypeMap[type];
               await notificationsService.send(notificationType, {

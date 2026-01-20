@@ -45,10 +45,10 @@ APP_NAME="NestJS Foundation"
 > **⚠️ Security Warning**: `sslmode=disable` is intended for **local development only** and is insecure for production environments.
 
 **Environment Variables Explained:**
-- `NODE_ENV`: How code runs (development/production/test) - affects build optimizations
-- `APP_ENV`: Where code is deployed (local/dev/stage/production) - affects business logic
-- Use `APP_ENV` for feature flags, log levels, API endpoints
-- Use `NODE_ENV` for build mode, minification, source maps
+- `NODE_ENV`: How code runs (build mode: development/production) - affects build optimizations, developer experience (pretty logs vs JSON)
+- `APP_ENV`: Where code is deployed (deployment environment: local/test/dev/stage/prod) - determines runtime behavior
+- Use `APP_ENV` for: Business logic (feature flags, log levels, API endpoints, retries, error details)
+- Use `NODE_ENV` for: Build mode (minification, source maps, pretty logs)
 
 ### 3. Setup Database
 
