@@ -3,6 +3,7 @@ import {
   Body,
   Delete,
   Get,
+  Inject,
   Injectable,
   NotFoundException,
   Param,
@@ -21,7 +22,8 @@ import {
 import { createZodDto } from 'nestjs-zod';
 import { DeepPartial, FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { z } from 'zod';
-import { ErrorResponseDto } from '#/app/dto/error-response.dto';
+import { ConfigService } from '#/app/config';
+import { ErrorCode, ErrorResponseDto } from '#/app/dto/error-response.dto';
 
 /**
  * Zod schema for admin list query parameters
@@ -120,6 +122,15 @@ export abstract class BaseAdminController<
     };
 
     if (query.sort) {
+      // Validate sort field against entity columns to prevent prototype pollution
+      const validColumns = this.repository.metadata.columns.map((col) => col.propertyName);
+      if (!validColumns.includes(query.sort)) {
+        throw new BadRequestException({
+          code: ErrorCode.VALIDATION_ERROR,
+          message: `Invalid sort field: ${query.sort}.`, // Valid fields are: ${validColumns.join(', ')}
+        });
+      }
+
       // biome-ignore lint/suspicious/noExplicitAny: Dynamic order key with computed property requires type assertion
       (findOptions as any).order = {
         [query.sort]: query.order,
