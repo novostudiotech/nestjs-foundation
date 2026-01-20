@@ -128,7 +128,7 @@ const RegisterSchema = z.object({
 
 ### Query Parameters with Type Coercion
 
-Query parameters from URLs are always received as strings. Use `z.coerce` to automatically convert them to the correct types:
+Query parameters from URLs are always received as strings. Use `z.coerce` for numbers and `z.stringbool()` for booleans to automatically convert them to the correct types:
 
 ```typescript
 const QuerySchema = z.object({
@@ -136,9 +136,11 @@ const QuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   
-  // Coerce string to boolean: "true" -> true, "false" -> false
-  includeDeleted: z.coerce.boolean().default(false),
-  expandRelations: z.coerce.boolean().default(false),
+  // Strict boolean parsing: only "true" -> true, "false" -> false
+  // Use z.stringbool() instead of z.coerce.boolean() to avoid JS truthiness issues
+  // (z.coerce.boolean() would convert "false" to true because Boolean("false") === true)
+  includeDeleted: z.stringbool({ truthy: ["true"], falsy: ["false"] }).default(false),
+  expandRelations: z.stringbool({ truthy: ["true"], falsy: ["false"] }).default(false),
   
   // String parameters don't need coercion
   search: z.string().optional(),
@@ -155,19 +157,25 @@ findAll(@Query() query: QueryDto) {
 }
 ```
 
-**Why use `z.coerce`?**
+**Why use `z.coerce` and `z.stringbool()`?**
 - Without coercion: `?page=1` → validation error (expected number, got string)
 - With coercion: `?page=1` → automatically converts "1" to 1 ✅
+- **Important**: Use `z.stringbool()` for booleans, not `z.coerce.boolean()`
+  - `z.coerce.boolean()` uses JavaScript truthiness: `Boolean("false") === true` ❌
+  - `z.stringbool()` strictly parses "true"/"false" strings: `"false" → false` ✅
 
 **Example requests:**
 ```bash
 # All parameters are coerced from strings to correct types
-GET /items?page=2&limit=10&includeDeleted=true
-# → { page: 2, limit: 10, includeDeleted: true }
+GET /items?page=2&limit=10&includeDeleted=true&expandRelations=false
+# → { page: 2, limit: 10, includeDeleted: true, expandRelations: false }
 
 # Invalid values still trigger validation errors
 GET /items?page=abc
 # → 400 Bad Request: "Invalid input: expected number, received NaN"
+
+GET /items?includeDeleted=yes
+# → 400 Bad Request: "Invalid input: expected 'true' or 'false'"
 ```
 
 ## Schema Reuse

@@ -13,7 +13,10 @@ export const QueryProductSchema = z.object({
   status: ProductStatusEnum.optional(),
   minPrice: z.coerce.number().positive().optional(),
   maxPrice: z.coerce.number().positive().optional(),
-  inStock: z.coerce.boolean().optional(),
+  // Strict boolean parsing: only "true" -> true, "false" -> false
+  // Use z.stringbool() instead of z.coerce.boolean() to avoid JS truthiness issues
+  // (z.coerce.boolean() would convert "false" to true because Boolean("false") === true)
+  inStock: z.stringbool({ truthy: ['true'], falsy: ['false'] }).optional(),
   search: z.string().min(1).max(100).optional(),
   sortBy: z.enum(['name', 'price', 'createdAt', 'updatedAt']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
