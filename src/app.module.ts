@@ -41,7 +41,7 @@ import { ProductsModule } from '#/products/products.module';
           // Retry connections based on where code is deployed (APP_ENV)
           // Production-like environments (production, stage) = retries for reliability
           // Development/test environments = fail fast for immediate feedback
-          retryAttempts: ['production', 'stage'].includes(appEnv) ? 3 : 0,
+          retryAttempts: ['prod', 'stage'].includes(appEnv) ? 3 : 0,
         };
       },
       // dataSource receives the configured DataSourceOptions
@@ -87,7 +87,7 @@ import { ProductsModule } from '#/products/products.module';
             secret,
             trustedOrigins: getTrustedOrigins(corsOriginsString),
             isTest: appEnv === 'test',
-            isProduction: appEnv === 'production',
+            isProduction: appEnv === 'prod',
             sendOtp: async ({ email, otp, type }) => {
               const notificationType = otpTypeMap[type];
               await notificationsService.send(notificationType, {

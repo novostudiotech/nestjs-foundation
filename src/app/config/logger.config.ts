@@ -14,7 +14,7 @@ export function getLoggerConfig(configService: ConfigService): Params {
   // Log level based on where code is deployed (APP_ENV)
   const logLevel =
     configService.get('LOG_LEVEL') ||
-    (appEnv === 'production' ? 'warn' : appEnv === 'stage' ? 'info' : 'debug');
+    (appEnv === 'prod' ? 'warn' : appEnv === 'stage' ? 'info' : 'debug');
 
   return {
     pinoHttp: {

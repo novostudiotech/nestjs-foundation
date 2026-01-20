@@ -46,7 +46,7 @@ APP_NAME="NestJS Foundation"
 
 **Environment Variables Explained:**
 - `NODE_ENV`: How code runs (build mode: development/production) - affects build optimizations, developer experience (pretty logs vs JSON)
-- `APP_ENV`: Where code is deployed (deployment environment: local/test/dev/stage/production) - determines runtime behavior
+- `APP_ENV`: Where code is deployed (deployment environment: local/test/dev/stage/prod) - determines runtime behavior
 - Use `APP_ENV` for: Business logic (feature flags, log levels, API endpoints, retries, error details)
 - Use `NODE_ENV` for: Build mode (minification, source maps, pretty logs)
 
