@@ -3,7 +3,6 @@ import {
   Body,
   Delete,
   Get,
-  Inject,
   Injectable,
   NotFoundException,
   Param,
@@ -22,7 +21,6 @@ import {
 import { createZodDto } from 'nestjs-zod';
 import { DeepPartial, FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { z } from 'zod';
-import { ConfigService } from '#/app/config';
 import { ErrorCode, ErrorResponseDto } from '#/app/dto/error-response.dto';
 
 /**
