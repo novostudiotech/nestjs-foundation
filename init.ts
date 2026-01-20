@@ -354,7 +354,9 @@ function smartReplace(filePath: string, replacements: ReplacementMap, preview: b
   const changes: string[] = [];
 
   // Remove sections marked for removal after initialization
-  const initPattern = /<!-- remove_after_init_start -->[\s\S]*?<!-- remove_after_init_end -->\n?/g;
+  // Supports both HTML comments (<!-- -->) and JS/TS comments (/* */)
+  const initPattern =
+    /(?:<!--\s*remove_after_init_start\s*-->|\/\*\s*remove_after_init_start\s*\*\/)[\s\S]*?(?:<!--\s*remove_after_init_end\s*-->|\/\*\s*remove_after_init_end\s*\*\/)\n?/g;
   const initMatches = newContent.match(initPattern);
   if (initMatches && initMatches.length > 0) {
     newContent = newContent.replace(initPattern, '');

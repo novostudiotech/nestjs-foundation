@@ -13,9 +13,9 @@ import { AppController } from '#/app.controller';
 import { AppService } from '#/app.service';
 import { type BetterAuthOtpType, getBetterAuthConfig } from '#/auth/auth.config';
 import { NotificationsModule, NotificationsService, NotificationType } from '#/notifications';
-// remove_after_init_start
+/* remove_after_init_start */
 import { ProductsModule } from '#/products/products.module';
-// remove_after_init_end
+/* remove_after_init_end */
 
 @Module({
   imports: [
@@ -94,9 +94,9 @@ import { ProductsModule } from '#/products/products.module';
       },
       inject: [ConfigService, NotificationsService],
     }),
-    // remove_after_init_start
+    /* remove_after_init_start */
     ProductsModule,
-    // remove_after_init_end
+    /* remove_after_init_end */
   ],
   controllers: [AppController],
   providers: [
