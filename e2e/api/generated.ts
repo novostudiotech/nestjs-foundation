@@ -6,6 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 import type {
+  AdminAccountEntityControllerFindAllParams,
+  AdminSessionEntityControllerFindAllParams,
+  AdminUserEntityControllerFindAllParams,
+  AdminVerificationEntityControllerFindAllParams,
   ChangeEmail200,
   ChangeEmailBody,
   ChangePassword200,
@@ -99,6 +103,274 @@ export const healthControllerCheck = (
   options?: SecondParameter<typeof request<HealthControllerCheck200>>
 ) => {
   return request<HealthControllerCheck200>({ url: `/health`, method: 'GET' }, options);
+};
+
+/**
+ * @summary List all entities
+ */
+export const adminUserEntityControllerFindAll = (
+  params?: AdminUserEntityControllerFindAllParams,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/user`, method: 'GET', params }, options);
+};
+
+/**
+ * @summary Create a new entity
+ */
+export const adminUserEntityControllerCreate = (
+  adminUserEntityControllerCreateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/user`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminUserEntityControllerCreateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Get entity by ID
+ */
+export const adminUserEntityControllerFindOne = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/user/${id}`, method: 'GET' }, options);
+};
+
+/**
+ * @summary Update an entity
+ */
+export const adminUserEntityControllerUpdate = (
+  id: string,
+  adminUserEntityControllerUpdateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/user/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminUserEntityControllerUpdateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Delete an entity
+ */
+export const adminUserEntityControllerRemove = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/user/${id}`, method: 'DELETE' }, options);
+};
+
+/**
+ * @summary List all entities
+ */
+export const adminAccountEntityControllerFindAll = (
+  params?: AdminAccountEntityControllerFindAllParams,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/account`, method: 'GET', params }, options);
+};
+
+/**
+ * @summary Create a new entity
+ */
+export const adminAccountEntityControllerCreate = (
+  adminAccountEntityControllerCreateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/account`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminAccountEntityControllerCreateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Get entity by ID
+ */
+export const adminAccountEntityControllerFindOne = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/account/${id}`, method: 'GET' }, options);
+};
+
+/**
+ * @summary Update an entity
+ */
+export const adminAccountEntityControllerUpdate = (
+  id: string,
+  adminAccountEntityControllerUpdateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/account/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminAccountEntityControllerUpdateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Delete an entity
+ */
+export const adminAccountEntityControllerRemove = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/account/${id}`, method: 'DELETE' }, options);
+};
+
+/**
+ * @summary List all entities
+ */
+export const adminSessionEntityControllerFindAll = (
+  params?: AdminSessionEntityControllerFindAllParams,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/session`, method: 'GET', params }, options);
+};
+
+/**
+ * @summary Create a new entity
+ */
+export const adminSessionEntityControllerCreate = (
+  adminSessionEntityControllerCreateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/session`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminSessionEntityControllerCreateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Get entity by ID
+ */
+export const adminSessionEntityControllerFindOne = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/session/${id}`, method: 'GET' }, options);
+};
+
+/**
+ * @summary Update an entity
+ */
+export const adminSessionEntityControllerUpdate = (
+  id: string,
+  adminSessionEntityControllerUpdateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/session/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminSessionEntityControllerUpdateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Delete an entity
+ */
+export const adminSessionEntityControllerRemove = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/session/${id}`, method: 'DELETE' }, options);
+};
+
+/**
+ * @summary List all entities
+ */
+export const adminVerificationEntityControllerFindAll = (
+  params?: AdminVerificationEntityControllerFindAllParams,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/verification`, method: 'GET', params }, options);
+};
+
+/**
+ * @summary Create a new entity
+ */
+export const adminVerificationEntityControllerCreate = (
+  adminVerificationEntityControllerCreateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/verification`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminVerificationEntityControllerCreateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Get entity by ID
+ */
+export const adminVerificationEntityControllerFindOne = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/verification/${id}`, method: 'GET' }, options);
+};
+
+/**
+ * @summary Update an entity
+ */
+export const adminVerificationEntityControllerUpdate = (
+  id: string,
+  adminVerificationEntityControllerUpdateBody: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>(
+    {
+      url: `/admin/verification/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: adminVerificationEntityControllerUpdateBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Delete an entity
+ */
+export const adminVerificationEntityControllerRemove = (
+  id: string,
+  options?: SecondParameter<typeof request<void>>
+) => {
+  return request<void>({ url: `/admin/verification/${id}`, method: 'DELETE' }, options);
 };
 
 /**
@@ -731,6 +1003,66 @@ export type MetricsControllerIndexResult = NonNullable<
 >;
 export type HealthControllerCheckResult = NonNullable<
   Awaited<ReturnType<typeof healthControllerCheck>>
+>;
+export type AdminUserEntityControllerFindAllResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserEntityControllerFindAll>>
+>;
+export type AdminUserEntityControllerCreateResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserEntityControllerCreate>>
+>;
+export type AdminUserEntityControllerFindOneResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserEntityControllerFindOne>>
+>;
+export type AdminUserEntityControllerUpdateResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserEntityControllerUpdate>>
+>;
+export type AdminUserEntityControllerRemoveResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserEntityControllerRemove>>
+>;
+export type AdminAccountEntityControllerFindAllResult = NonNullable<
+  Awaited<ReturnType<typeof adminAccountEntityControllerFindAll>>
+>;
+export type AdminAccountEntityControllerCreateResult = NonNullable<
+  Awaited<ReturnType<typeof adminAccountEntityControllerCreate>>
+>;
+export type AdminAccountEntityControllerFindOneResult = NonNullable<
+  Awaited<ReturnType<typeof adminAccountEntityControllerFindOne>>
+>;
+export type AdminAccountEntityControllerUpdateResult = NonNullable<
+  Awaited<ReturnType<typeof adminAccountEntityControllerUpdate>>
+>;
+export type AdminAccountEntityControllerRemoveResult = NonNullable<
+  Awaited<ReturnType<typeof adminAccountEntityControllerRemove>>
+>;
+export type AdminSessionEntityControllerFindAllResult = NonNullable<
+  Awaited<ReturnType<typeof adminSessionEntityControllerFindAll>>
+>;
+export type AdminSessionEntityControllerCreateResult = NonNullable<
+  Awaited<ReturnType<typeof adminSessionEntityControllerCreate>>
+>;
+export type AdminSessionEntityControllerFindOneResult = NonNullable<
+  Awaited<ReturnType<typeof adminSessionEntityControllerFindOne>>
+>;
+export type AdminSessionEntityControllerUpdateResult = NonNullable<
+  Awaited<ReturnType<typeof adminSessionEntityControllerUpdate>>
+>;
+export type AdminSessionEntityControllerRemoveResult = NonNullable<
+  Awaited<ReturnType<typeof adminSessionEntityControllerRemove>>
+>;
+export type AdminVerificationEntityControllerFindAllResult = NonNullable<
+  Awaited<ReturnType<typeof adminVerificationEntityControllerFindAll>>
+>;
+export type AdminVerificationEntityControllerCreateResult = NonNullable<
+  Awaited<ReturnType<typeof adminVerificationEntityControllerCreate>>
+>;
+export type AdminVerificationEntityControllerFindOneResult = NonNullable<
+  Awaited<ReturnType<typeof adminVerificationEntityControllerFindOne>>
+>;
+export type AdminVerificationEntityControllerUpdateResult = NonNullable<
+  Awaited<ReturnType<typeof adminVerificationEntityControllerUpdate>>
+>;
+export type AdminVerificationEntityControllerRemoveResult = NonNullable<
+  Awaited<ReturnType<typeof adminVerificationEntityControllerRemove>>
 >;
 export type ProductsControllerCreateResult = NonNullable<
   Awaited<ReturnType<typeof productsControllerCreate>>

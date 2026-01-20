@@ -1,4 +1,4 @@
-import { Logger, Module, OnModuleInit } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule, OnModuleInit } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { InjectDataSource, TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
@@ -6,6 +6,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { AdminMiddleware, AdminModule } from '#/admin';
 import { AppConfigModule, ConfigService, getDatabaseConfig, getLoggerConfig } from '#/app/config';
 import { getTrustedOrigins } from '#/app/cors';
 import { HealthModule } from '#/app/health/health.module';
@@ -13,6 +14,7 @@ import { MetricsController } from '#/app/metrics/metrics.controller';
 import { AppController } from '#/app.controller';
 import { AppService } from '#/app.service';
 import { type BetterAuthOtpType, getBetterAuthConfig } from '#/auth/auth.config';
+import { AuthControllersModule } from '#/auth/auth.module';
 import { NotificationsModule, NotificationsService, NotificationType } from '#/notifications';
 /* remove_after_init_start */
 import { ProductsModule } from '#/products/products.module';
@@ -68,6 +70,7 @@ import { ProductsModule } from '#/products/products.module';
       inject: [ConfigService],
     }),
     NotificationsModule,
+    // AuthModule must be imported before AdminModule because AdminGuard depends on AUTH_MODULE_OPTIONS_KEY
     AuthModule.forRootAsync({
       imports: [NotificationsModule],
       useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {
@@ -103,6 +106,8 @@ import { ProductsModule } from '#/products/products.module';
       },
       inject: [ConfigService, NotificationsService],
     }),
+    AdminModule.forRoot(), // Register all admin entities from adminRegistry
+    AuthControllersModule,
     /* remove_after_init_start */
     ProductsModule,
     /* remove_after_init_end */
@@ -120,10 +125,14 @@ import { ProductsModule } from '#/products/products.module';
     },
   ],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements NestModule, OnModuleInit {
   private readonly logger = new Logger(AppModule.name);
 
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AdminMiddleware).forRoutes('admin/*');
+  }
 
   async onModuleInit() {
     try {
