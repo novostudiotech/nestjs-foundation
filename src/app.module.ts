@@ -87,7 +87,7 @@ import { ProductsModule } from '#/products/products.module';
             secret,
             trustedOrigins: getTrustedOrigins(corsOriginsString),
             isTest: appEnv === 'test',
-            isProduction: appEnv === 'prod',
+            isProd: appEnv === 'prod',
             sendOtp: async ({ email, otp, type }) => {
               const notificationType = otpTypeMap[type];
               await notificationsService.send(notificationType, {

@@ -34,7 +34,7 @@ export interface BetterAuthConfigOptions {
   /**
    * Whether running in production mode (affects logging)
    */
-  isProduction: boolean;
+  isProd: boolean;
   /**
    * Optional callback to send OTP emails.
    * If not provided, OTP sending will be disabled (logs a warning).
@@ -56,7 +56,7 @@ export function getBetterAuthConfig({
   secret,
   trustedOrigins,
   isTest,
-  isProduction,
+  isProd,
   sendOtp,
   otpExpiresIn = 300,
 }: BetterAuthConfigOptions) {
@@ -86,7 +86,7 @@ export function getBetterAuthConfig({
             });
           } else {
             // Only log OTP in development (never in production for security)
-            if (!isProduction) {
+            if (!isProd) {
               console.warn(`[DEV] OTP for ${email}: ${otp} (sendOtp callback not configured)`);
             } else {
               console.warn(`OTP requested for ${email} but sendOtp callback not configured`);

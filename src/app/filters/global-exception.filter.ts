@@ -229,11 +229,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Build details from PostgreSQL error
     // Hide sensitive details based on where code is deployed (APP_ENV)
     const appEnv = this.configService.get('APP_ENV');
-    const isProduction = appEnv === 'prod';
+    const isProd = appEnv === 'prod';
     const details: ErrorDetails = {};
 
     // Table name only exposed in non-prod environments
-    if (!isProduction) {
+    if (!isProd) {
       if (dbError.table) details.table = dbError.table;
     }
 
