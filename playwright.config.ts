@@ -42,6 +42,9 @@ export default defineConfig({
     env: {
       // Proxying all environment variables from .env.test
       ...process.env,
+      // NODE_ENV must be 'development' or 'production' (not 'test')
+      // Set based on the command being run
+      NODE_ENV: process.env.CI ? 'production' : 'development',
       APP_ENV: 'test',
       PORT,
       DATABASE_URL: process.env.TEST_DATABASE_URL,
