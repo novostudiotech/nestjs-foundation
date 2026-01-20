@@ -1,4 +1,5 @@
 import { Heading, Section, Text } from '@react-email/components';
+import type { CSSProperties } from 'react';
 import { styles } from '../_components';
 import BaseLayout from './base-layout';
 
@@ -60,15 +61,15 @@ export default function OtpCodeEmail({
 
       <Text style={styles.text}>{messages.instruction}</Text>
 
-      <Section style={styles.codeContainer as React.CSSProperties}>
+      <Section style={styles.codeContainer as CSSProperties}>
         <Text style={styles.code}>{otp}</Text>
       </Section>
 
-      <Text style={styles.textMuted as React.CSSProperties}>
+      <Text style={styles.textMuted as CSSProperties}>
         This code will expire in {expiresInMinutes} {expiresInMinutes === 1 ? 'minute' : 'minutes'}.
       </Text>
 
-      <Text style={styles.textMuted as React.CSSProperties}>
+      <Text style={styles.textMuted as CSSProperties}>
         If you didn't request this code, you can safely ignore this email. Someone may have entered
         your email address by mistake.
       </Text>

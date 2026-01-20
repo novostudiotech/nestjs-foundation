@@ -1,4 +1,5 @@
 import { Hr, Section, Text } from '@react-email/components';
+import type { CSSProperties } from 'react';
 import { styles } from './styles';
 
 export interface FooterProps {
@@ -15,7 +16,7 @@ export default function Footer({ appName = 'NestJS Foundation', supportEmail }: 
   return (
     <>
       <Hr style={styles.divider} />
-      <Section style={styles.footer as React.CSSProperties}>
+      <Section style={styles.footer as CSSProperties}>
         <Text style={{ margin: 0 }}>
           © {new Date().getFullYear()} {appName}. All rights reserved.
         </Text>

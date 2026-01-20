@@ -1,4 +1,5 @@
 import { Button as EmailButton, Section } from '@react-email/components';
+import type { CSSProperties } from 'react';
 import { styles } from './styles';
 
 export interface ButtonProps {
@@ -13,7 +14,7 @@ export interface ButtonProps {
  */
 export default function Button({ children = 'Click here', href = '#' }: ButtonProps) {
   return (
-    <Section style={styles.buttonContainer as React.CSSProperties}>
+    <Section style={styles.buttonContainer as CSSProperties}>
       <EmailButton href={href} style={styles.button}>
         {children}
       </EmailButton>

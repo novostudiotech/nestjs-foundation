@@ -1,4 +1,5 @@
 import { Heading, Text } from '@react-email/components';
+import type { CSSProperties } from 'react';
 import { styles } from '../_components';
 import Button from '../_components/button';
 import BaseLayout from './base-layout';
@@ -47,7 +48,7 @@ export default function WelcomeEmail({
 
       {dashboardUrl && <Button href={dashboardUrl}>Get Started</Button>}
 
-      <Text style={styles.textMuted as React.CSSProperties}>
+      <Text style={styles.textMuted as CSSProperties}>
         If you have any questions or need help getting started, don't hesitate to reach out to our
         support team.
       </Text>
