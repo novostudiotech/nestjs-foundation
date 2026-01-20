@@ -510,6 +510,81 @@ feature/
 
 **Implementation details:** See reference files in AGENTS.md and respective docs/
 
+## Environment Configuration
+
+The application uses two environment variables to control behavior:
+
+### NODE_ENV - How Code Runs (Build Mode)
+
+**Purpose:** Controls build mode, optimizations, and developer experience.
+
+**Values:**
+- `development` - Dev build with hot reload, verbose errors, source maps, **pretty logs**
+- `production` - Optimized build with minification, no source maps, **JSON logs**
+
+**Use for:**
+- Developer experience (pretty logs vs JSON)
+- Build optimizations (minification, source maps)
+- Framework behavior (hot reload, error details)
+
+**Examples:**
+- `pnpm dev` → `NODE_ENV=development` → Pretty logs, easy debugging
+- `pnpm start:prod` → `NODE_ENV=production` → JSON logs, optimized build
+
+### APP_ENV - Where Code is Deployed (Deployment Environment)
+
+**Purpose:** Determines runtime behavior based on where code is deployed.
+
+**Values:**
+- `local` - Developer's local machine
+- `test` - Automated testing environment (E2E, integration tests)
+- `dev` - Shared development server
+- `stage` - Staging/QA environment (production-like for testing)
+- `production` - Live production environment
+
+**Use for:**
+- Business logic (feature flags, API endpoints)
+- Log levels (production=warn, stage=info, others=debug)
+- Database retries (production/stage=3 retries, others=0)
+- Error details visibility (production hides sensitive details)
+- Sentry environment identification
+
+**Examples:**
+- Local development → `APP_ENV=local` → Debug logs, all error details
+- E2E tests → `APP_ENV=test` → JSON logs (if prod build), error details visible
+- Production → `APP_ENV=production` → Warn logs, retries enabled, sensitive data hidden
+
+### Key Principle: Separation of Concerns
+
+```text
+NODE_ENV (How)          APP_ENV (Where)
+├─ Build mode          ├─ Business logic
+├─ Developer UX        ├─ Log levels
+└─ Framework behavior  └─ Runtime behavior
+```
+
+**Rule of thumb:**
+- **NODE_ENV** = "How is the code running?" (dev build vs prod build)
+- **APP_ENV** = "Where is the code deployed?" (local vs test vs production)
+
+### Environment File Loading
+
+Environment files are loaded based on `APP_ENV` via `env.js`:
+
+**Priority (first found wins):**
+1. `.env.{APP_ENV}` (e.g., `.env.test`, `.env.production`)
+2. `.env` (fallback)
+
+**Examples:**
+- `APP_ENV=test` → Loads `.env.test` → `.env`
+- `APP_ENV=production` → Loads `.env.production` → `.env`
+- `APP_ENV=local` (default) → Loads `.env.local` → `.env`
+
+**Configuration:**
+- `env.js` - Loads `.env` files based on `APP_ENV`
+- `src/app/config/config.module.ts` - Validates environment variables via Zod
+- `src/app/config/env.ts` - Defines schema and types
+
 ## Request Flow
 
 ```text

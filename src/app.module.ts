@@ -33,12 +33,15 @@ import { ProductsModule } from '#/products/products.module';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
+        const appEnv = configService.get('APP_ENV');
         const config = getDatabaseConfig(databaseUrl);
 
         return {
           ...config,
-          // In development we want to see error messages right away and not wait for all the retries to fail
-          retryAttempts: process.env.APP_ENV === 'production' ? 3 : 0,
+          // Retry connections based on where code is deployed (APP_ENV)
+          // Production-like environments (production, stage) = retries for reliability
+          // Development/test environments = fail fast for immediate feedback
+          retryAttempts: ['production', 'stage'].includes(appEnv) ? 3 : 0,
         };
       },
       // dataSource receives the configured DataSourceOptions
@@ -69,6 +72,7 @@ import { ProductsModule } from '#/products/products.module';
         const databaseUrl = configService.get('DATABASE_URL');
         const secret = configService.get('AUTH_SECRET');
         const corsOriginsString = configService.get('CORS_ORIGINS') || '';
+        const appEnv = configService.get('APP_ENV');
         const nodeEnv = configService.get('NODE_ENV');
 
         // Map Better Auth OTP types to notification types
@@ -83,7 +87,7 @@ import { ProductsModule } from '#/products/products.module';
             databaseUrl,
             secret,
             trustedOrigins: getTrustedOrigins(corsOriginsString),
-            isTest: nodeEnv === 'test',
+            isTest: appEnv === 'test',
             isProduction: nodeEnv === 'production',
             sendOtp: async ({ email, otp, type }) => {
               const notificationType = otpTypeMap[type];

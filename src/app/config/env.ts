@@ -7,24 +7,25 @@ import { z } from 'zod';
 const envSchema = z.object({
   // App
   /**
-   * NODE_ENV - How the code is running (build mode, optimizations)
-   * - development: Dev mode with hot reload, verbose errors
-   * - production: Optimized build, minified assets
-   * - test: Test mode for automated testing
+   * NODE_ENV - How code runs (build mode)
+   * - development: Dev build with hot reload, verbose errors, source maps
+   * - production: Optimized build with minification, no source maps
+   *
+   * Use for: Developer experience (pretty logs, error details in console)
    */
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z.enum(['development', 'production']).default('development'),
 
   /**
-   * APP_ENV - Where the code is deployed (environment/stage)
+   * APP_ENV - Where code is deployed (deployment environment)
    * - local: Developer's local machine
-   * - dev: Development server (shared dev environment)
-   * - stage: Staging/QA environment (production-like)
+   * - test: Automated testing environment (E2E, integration tests)
+   * - dev: Development server (shared team environment)
+   * - stage: Staging/QA environment (production-like testing)
    * - production: Production environment (live users)
    *
-   * Use APP_ENV for business logic (feature flags, API endpoints, log levels)
-   * Use NODE_ENV for build optimizations (minification, source maps)
+   * Use for: Business logic (feature flags, API endpoints, log levels, retries)
    */
-  APP_ENV: z.enum(['local', 'dev', 'stage', 'production']).default('local'),
+  APP_ENV: z.enum(['local', 'test', 'dev', 'stage', 'production']).default('local'),
 
   PORT: z.coerce.number().int().positive().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),

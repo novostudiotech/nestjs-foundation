@@ -33,7 +33,7 @@ export default defineConfig({
     // Use production build for E2E tests to test against production-like environment
     // In CI, build step runs before E2E tests, so dist/ will exist
     // For local development, run `pnpm build` first
-    command: process.env.CI ? `NODE_ENV=test pnpm start:prod` : `NODE_ENV=test pnpm run dev`,
+    command: process.env.CI ? `pnpm start:prod` : `pnpm run dev`,
     stdout: 'pipe',
     stderr: 'pipe',
     url: `${baseURL}/health`,
@@ -42,7 +42,7 @@ export default defineConfig({
     env: {
       // Proxying all environment variables from .env.test
       ...process.env,
-      NODE_ENV: 'test',
+      APP_ENV: 'test',
       PORT,
       DATABASE_URL: process.env.TEST_DATABASE_URL,
     },

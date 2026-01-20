@@ -44,8 +44,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Initialize Sentry if DSN is provided
     const sentryDsn = this.configService.get('SENTRY_DSN');
+    // Sentry environment = where code is deployed (APP_ENV)
     const sentryEnvironment =
-      this.configService.get('SENTRY_ENVIRONMENT') || this.configService.get('NODE_ENV');
+      this.configService.get('SENTRY_ENVIRONMENT') || this.configService.get('APP_ENV');
     this.sentryEnabled = Boolean(sentryDsn);
 
     if (this.sentryEnabled && sentryDsn) {
@@ -226,13 +227,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     };
 
     // Build details from PostgreSQL error
-    // TODO: Consider using centralized config for environment checks instead of direct process.env access
-    // For consistency with other parts of the codebase (e.g., sentryConfig), add an isProduction
-    // or environment property to the config module and use it here
-    const isProduction = process.env.NODE_ENV === 'production';
+    // Hide sensitive details based on where code is deployed (APP_ENV)
+    const appEnv = this.configService.get('APP_ENV');
+    const isProduction = appEnv === 'production';
     const details: ErrorDetails = {};
 
-    // Table name is only exposed in non-production environments
+    // Table name only exposed in non-production environments
     if (!isProduction) {
       if (dbError.table) details.table = dbError.table;
     }
