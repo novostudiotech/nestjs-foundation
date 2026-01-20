@@ -10,11 +10,11 @@ import { validateEnv } from './env';
  * Global configuration module
  * Provides typed ConfigService throughout the application
  *
- * Environment variables are loaded by dotenv/config (see package.json scripts).
+ * Environment variables are loaded by env.js (see package.json scripts).
  * This module only validates them using Zod schema.
  *
  * This module:
- * 1. Validates environment variables loaded by dotenv
+ * 1. Validates environment variables loaded by env.js
  * 2. Aliases our typed ConfigService to NestJS ConfigService
  * 3. Exports typed ConfigService for use throughout the app
  *
@@ -25,7 +25,7 @@ import { validateEnv } from './env';
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
-      // No envFilePath - dotenv/config handles loading via NODE_OPTIONS in package.json
+      // No envFilePath - env.js handles loading via NODE_OPTIONS in package.json
       // This prevents confusion about which mechanism loads .env files
       ignoreEnvFile: true,
       validate: validateEnv,
