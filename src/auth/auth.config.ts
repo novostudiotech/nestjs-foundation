@@ -2,7 +2,6 @@ import { betterAuth } from 'better-auth';
 import { emailOTP, openAPI } from 'better-auth/plugins';
 import { Pool } from 'pg';
 import { uuidv7 } from 'uuidv7';
-import { getTrustedOrigins } from '#/app/cors';
 
 /**
  * OTP type from Better Auth emailOTP plugin
@@ -25,6 +24,18 @@ export interface BetterAuthConfigOptions {
   databaseUrl: string;
   secret: string;
   /**
+   * Trusted origins for CORS (array of origin patterns)
+   */
+  trustedOrigins: string[];
+  /**
+   * Whether running in test mode
+   */
+  isTest: boolean;
+  /**
+   * Whether running in production mode (affects logging)
+   */
+  isProduction: boolean;
+  /**
    * Optional callback to send OTP emails.
    * If not provided, OTP sending will be disabled (logs a warning).
    */
@@ -43,12 +54,12 @@ export interface BetterAuthConfigOptions {
 export function getBetterAuthConfig({
   databaseUrl,
   secret,
+  trustedOrigins,
+  isTest,
+  isProduction,
   sendOtp,
   otpExpiresIn = 300,
 }: BetterAuthConfigOptions) {
-  const trustedOrigins = getTrustedOrigins(process.env.CORS_ORIGINS);
-  const isTest = process.env.NODE_ENV === 'test';
-
   return betterAuth({
     database: new Pool({
       connectionString: databaseUrl,
@@ -75,7 +86,7 @@ export function getBetterAuthConfig({
             });
           } else {
             // Only log OTP in development (never in production for security)
-            if (process.env.NODE_ENV !== 'production') {
+            if (!isProduction) {
               console.warn(`[DEV] OTP for ${email}: ${otp} (sendOtp callback not configured)`);
             } else {
               console.warn(`OTP requested for ${email} but sendOtp callback not configured`);
