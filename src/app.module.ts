@@ -73,7 +73,6 @@ import { ProductsModule } from '#/products/products.module';
         const secret = configService.get('AUTH_SECRET');
         const corsOriginsString = configService.get('CORS_ORIGINS') || '';
         const appEnv = configService.get('APP_ENV');
-        const nodeEnv = configService.get('NODE_ENV');
 
         // Map Better Auth OTP types to notification types
         const otpTypeMap: Record<BetterAuthOtpType, NotificationType> = {
@@ -88,7 +87,7 @@ import { ProductsModule } from '#/products/products.module';
             secret,
             trustedOrigins: getTrustedOrigins(corsOriginsString),
             isTest: appEnv === 'test',
-            isProduction: nodeEnv === 'production',
+            isProduction: appEnv === 'production',
             sendOtp: async ({ email, otp, type }) => {
               const notificationType = otpTypeMap[type];
               await notificationsService.send(notificationType, {
