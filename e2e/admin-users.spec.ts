@@ -15,7 +15,7 @@ test.describe('Admin User CRUD', () => {
     ]);
 
     // Test listing users with pagination
-    const response = await api.adminUserEntityControllerFindAll({ page: '1', perPage: '10' });
+    const response = await api.adminUsersControllerFindAll({ page: 1, perPage: 10 });
 
     expect(response.status).toBe(200);
     expect(response.data).toBeDefined();
@@ -35,7 +35,7 @@ test.describe('Admin User CRUD', () => {
     if (!dbUser) return;
 
     // Test getting user by ID
-    const response = await api.adminUserEntityControllerFindOne(dbUser.id);
+    const response = await api.adminUsersControllerFindOne(dbUser.id);
 
     expect(response.status).toBe(200);
     expect(response.data).toBeDefined();
@@ -48,7 +48,7 @@ test.describe('Admin User CRUD', () => {
     const { api } = await useAuthenticatedApi();
 
     const nonExistentId = '01234567-89ab-7def-0123-456789abcdef';
-    const response = await api.adminUserEntityControllerFindOne(nonExistentId);
+    const response = await api.adminUsersControllerFindOne(nonExistentId);
 
     expect(response.status).toBe(404);
   });
@@ -64,7 +64,7 @@ test.describe('Admin User CRUD', () => {
     };
 
     // Create user via admin API
-    const response = await api.adminUserEntityControllerCreate(newUserData);
+    const response = await api.adminUsersControllerCreate(newUserData);
 
     expect(response.status).toBe(201);
     expect(response.data).toBeDefined();
@@ -102,7 +102,7 @@ test.describe('Admin User CRUD', () => {
       emailVerified: true,
     };
 
-    const response = await api.adminUserEntityControllerUpdate(userId, updateData);
+    const response = await api.adminUsersControllerUpdate(userId, updateData);
 
     expect(response.status).toBe(200);
     expect(response.data).toBeDefined();
@@ -141,7 +141,7 @@ test.describe('Admin User CRUD', () => {
       name: 'Partially Updated Name',
     };
 
-    const response = await api.adminUserEntityControllerUpdate(userId, updateData);
+    const response = await api.adminUsersControllerUpdate(userId, updateData);
 
     expect(response.status).toBe(200);
     expect(response.data).toBeDefined();
@@ -167,7 +167,7 @@ test.describe('Admin User CRUD', () => {
     const userId = user.id;
 
     // Delete user via admin API
-    const response = await api.adminUserEntityControllerRemove(userId);
+    const response = await api.adminUsersControllerRemove(userId);
 
     expect(response.status).toBe(200);
     expect(response.data).toBeDefined();
@@ -210,9 +210,9 @@ test.describe('Admin User CRUD', () => {
 
     // Filter for verified users only
     const filterJson = JSON.stringify({ emailVerified: true });
-    const response = await api.adminUserEntityControllerFindAll({
-      page: '1',
-      perPage: '10',
+    const response = await api.adminUsersControllerFindAll({
+      page: 1,
+      perPage: 10,
       filter: filterJson,
     });
 
@@ -241,18 +241,18 @@ test.describe('Admin User CRUD', () => {
     await db.userRepo.save(users);
 
     // Test first page with 2 items per page
-    const page1Response = await api.adminUserEntityControllerFindAll({
-      page: '1',
-      perPage: '2',
+    const page1Response = await api.adminUsersControllerFindAll({
+      page: 1,
+      perPage: 2,
     });
     expect(page1Response.status).toBe(200);
     expect(page1Response.data.data.length).toBe(2);
     expect(page1Response.data.total).toBeGreaterThanOrEqual(5);
 
     // Test second page
-    const page2Response = await api.adminUserEntityControllerFindAll({
-      page: '2',
-      perPage: '2',
+    const page2Response = await api.adminUsersControllerFindAll({
+      page: 2,
+      perPage: 2,
     });
     expect(page2Response.status).toBe(200);
     expect(page2Response.data.data.length).toBe(2);
@@ -268,7 +268,7 @@ test.describe('Admin User CRUD', () => {
     const api = await useApi();
 
     // Try to list users without authentication
-    const response = await api.adminUserEntityControllerFindAll({ page: '1', perPage: '10' });
+    const response = await api.adminUsersControllerFindAll({ page: 1, perPage: 10 });
 
     expect(response.status).toBe(401);
   });
@@ -283,7 +283,7 @@ test.describe('Admin User CRUD', () => {
       emailVerified: false,
     };
 
-    const response = await api.adminUserEntityControllerCreate(invalidUserData);
+    const response = await api.adminUsersControllerCreate(invalidUserData);
 
     expect(response.status).toBe(400);
   });

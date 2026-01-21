@@ -39,9 +39,10 @@ export class AdminModule implements OnModuleInit {
    * Configure AdminModule with entities from adminRegistry
    * Must be called in AppModule AFTER all modules with @AdminController are imported
    *
-   * @param authModule - AuthModule instance to make AUTH_MODULE_OPTIONS_KEY available to AuthGuard
+   * Note: AuthModule should be imported in AppModule separately.
+   * AuthGuard is registered globally by AuthModule, so no need to pass authModule here.
    */
-  static forRoot(authModule?: DynamicModule): DynamicModule {
+  static forRoot(): DynamicModule {
     // Get all entities registered by @AdminController decorator
     const entities = adminRegistry.getAll();
 
@@ -51,8 +52,8 @@ export class AdminModule implements OnModuleInit {
       imports: [
         DiscoveryModule,
         TypeOrmModule.forFeature(entities),
-        // Import AuthModule to make AUTH_MODULE_OPTIONS_KEY available to AuthGuard
-        ...(authModule ? [authModule] : []),
+        // AuthModule should be imported in AppModule separately
+        // AuthGuard is registered globally and AUTH_MODULE_OPTIONS_KEY is available via DI
       ],
       controllers: [
         // Admin controllers are registered in their respective modules

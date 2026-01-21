@@ -52,6 +52,17 @@ export interface AdminListResponse<T> {
 }
 
 /**
+ * Generic DTO class for admin list responses
+ * Used for Swagger/OpenAPI documentation
+ */
+export class AdminListResponseDto<T = unknown> {
+  data!: T[];
+  total!: number;
+  page!: number;
+  perPage!: number;
+}
+
+/**
  * Type helper to omit technical fields from entity for DTO creation
  */
 type OmitTechnicalFields<T> = Omit<T, 'id' | 'createdAt' | 'updatedAt'>;
@@ -110,7 +121,11 @@ export abstract class BaseAdminController<
 
   @Get()
   @ApiOperation({ summary: 'List all entities' })
-  @ApiOkResponse({ description: 'List of entities with pagination' })
+  @ApiOkResponse({
+    description: 'List of entities with pagination',
+    type: AdminListResponseDto,
+    isArray: false,
+  })
   async findAll(@Query() query: AdminListQuery): Promise<AdminListResponse<TEntity>> {
     const skip = (query.page - 1) * query.perPage;
 

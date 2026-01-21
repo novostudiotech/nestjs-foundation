@@ -1,15 +1,18 @@
-import { Body, Injectable, Param, Post, Put } from '@nestjs/common';
+import { Body, Get, Injectable, Param, Post, Put, Query } from '@nestjs/common';
 import {
   ApiBody,
   ApiCreatedResponse,
+  ApiExtraModels,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiResponse,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AdminController, BaseAdminController, createAdminController } from '#/admin';
+import { AdminListQuery } from '#/admin/base-admin.controller';
 import { ErrorResponseDto } from '#/app/dto/error-response.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -48,6 +51,7 @@ import { VerificationEntity } from './entities/verification.entity';
  * Uses CreateUserDto and UpdateUserDto for proper email validation
  */
 @AdminController(UserEntity)
+@ApiExtraModels(UserEntity)
 @Injectable()
 export class AdminUsersController extends BaseAdminController<
   UserEntity,
@@ -56,6 +60,44 @@ export class AdminUsersController extends BaseAdminController<
 > {
   constructor(@InjectRepository(UserEntity) repository: Repository<UserEntity>) {
     super(repository);
+  }
+
+  /**
+   * Override findAll method to specify response type for Swagger/OpenAPI
+   */
+  @Get()
+  @ApiOperation({ summary: 'List all users' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of users with pagination',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: getSchemaPath(UserEntity) },
+        },
+        total: { type: 'number' },
+        page: { type: 'number' },
+        perPage: { type: 'number' },
+      },
+      required: ['data', 'total', 'page', 'perPage'],
+    },
+  })
+  async findAll(@Query() query: AdminListQuery) {
+    return super.findAll(query);
+  }
+
+  /**
+   * Override findOne method to specify response type for Swagger/OpenAPI
+   */
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiOkResponse({ description: 'User details', type: UserEntity })
+  @ApiResponse({ status: 404, type: ErrorResponseDto })
+  async findOne(@Param('id') id: string): Promise<UserEntity> {
+    return super.findOne(id);
   }
 
   /**
