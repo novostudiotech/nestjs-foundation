@@ -5,9 +5,9 @@
  * NestJS Foundation API Documentation
  * OpenAPI spec version: 1.0
  */
-import type { AdminUserEntityControllerFindAllOrder } from './adminUserEntityControllerFindAllOrder';
+import type { AdminUsersControllerFindAllOrder } from './adminUsersControllerFindAllOrder';
 
-export type AdminUserEntityControllerFindAllParams = {
+export type AdminUsersControllerFindAllParams = {
   /**
    * @maximum 9007199254740991
    * @exclusiveMinimum 0
@@ -19,6 +19,6 @@ export type AdminUserEntityControllerFindAllParams = {
    */
   perPage?: number;
   sort?: string;
-  order?: AdminUserEntityControllerFindAllOrder;
+  order?: AdminUsersControllerFindAllOrder;
   filter?: string;
 };

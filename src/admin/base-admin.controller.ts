@@ -52,6 +52,17 @@ export interface AdminListResponse<T> {
 }
 
 /**
+ * Generic DTO class for admin list responses
+ * Used for Swagger/OpenAPI documentation
+ */
+export class AdminListResponseDto<T = unknown> {
+  data!: T[];
+  total!: number;
+  page!: number;
+  perPage!: number;
+}
+
+/**
  * Type helper to omit technical fields from entity for DTO creation
  */
 type OmitTechnicalFields<T> = Omit<T, 'id' | 'createdAt' | 'updatedAt'>;
@@ -110,7 +121,11 @@ export abstract class BaseAdminController<
 
   @Get()
   @ApiOperation({ summary: 'List all entities' })
-  @ApiOkResponse({ description: 'List of entities with pagination' })
+  @ApiOkResponse({
+    description: 'List of entities with pagination',
+    type: AdminListResponseDto,
+    isArray: false,
+  })
   async findAll(@Query() query: AdminListQuery): Promise<AdminListResponse<TEntity>> {
     const skip = (query.page - 1) * query.perPage;
 
@@ -211,16 +226,30 @@ export abstract class BaseAdminController<
     return await this.repository.save(entity);
   }
 
+  /**
+   * Check if entity supports soft delete by checking for DeleteDateColumn
+   * @protected
+   */
+  protected supportsSoftDelete(): boolean {
+    return this.repository.metadata.columns.some((column) => column.isDeleteDate === true);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an entity' })
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Entity deleted successfully' })
   @ApiResponse({ status: 404, type: ErrorResponseDto })
   async remove(@Param('id') id: string): Promise<{ id: string }> {
-    const result = await this.repository.delete(id);
+    // Use softDelete if entity supports it, otherwise use hard delete
+    const result = this.supportsSoftDelete()
+      ? await this.repository.softDelete(id)
+      : await this.repository.delete(id);
 
     if (result.affected === 0) {
-      throw new NotFoundException(`Entity with ID ${id} not found`);
+      throw new NotFoundException({
+        code: ErrorCode.NOT_FOUND,
+        message: `Entity with ID ${id} not found`,
+      });
     }
 
     return { id };

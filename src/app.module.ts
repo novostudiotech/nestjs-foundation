@@ -70,7 +70,6 @@ import { ProductsModule } from '#/products/products.module';
       inject: [ConfigService],
     }),
     NotificationsModule,
-    // AuthModule must be imported before AdminModule because AdminGuard depends on AUTH_MODULE_OPTIONS_KEY
     AuthModule.forRootAsync({
       imports: [NotificationsModule],
       useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {

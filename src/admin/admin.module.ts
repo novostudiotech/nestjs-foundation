@@ -2,7 +2,6 @@ import { DynamicModule, Global, Module, OnModuleInit } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Logger } from 'nestjs-pino';
-import { AdminGuard } from './admin.guard';
 import { AdminDiscoveryService } from './admin-discovery.service';
 import { adminRegistry } from './admin-registry';
 
@@ -11,8 +10,9 @@ import { adminRegistry } from './admin-registry';
  * Provides admin controllers compatible with Refine and React Admin
  *
  * This module is @Global() which means:
- * - All providers (AdminGuard, AdminDiscoveryService) are available throughout the app
+ * - All providers (AdminDiscoveryService) are available throughout the app
  * - TypeORM repositories for admin entities are available throughout the app
+ * - AuthGuard from Better Auth is applied by default to all admin controllers (authentication required)
  * - You can create admin controllers in any module without importing AdminModule
  * - Just use @AdminController(Entity) decorator and BaseAdminController
  *
@@ -38,6 +38,9 @@ export class AdminModule implements OnModuleInit {
   /**
    * Configure AdminModule with entities from adminRegistry
    * Must be called in AppModule AFTER all modules with @AdminController are imported
+   *
+   * Note: AuthModule should be imported in AppModule separately.
+   * AuthGuard is registered globally by AuthModule, so no need to pass authModule here.
    */
   static forRoot(): DynamicModule {
     // Get all entities registered by @AdminController decorator
@@ -46,14 +49,19 @@ export class AdminModule implements OnModuleInit {
     return {
       global: true, // Make this module global
       module: AdminModule,
-      imports: [DiscoveryModule, TypeOrmModule.forFeature(entities)],
+      imports: [
+        DiscoveryModule,
+        TypeOrmModule.forFeature(entities),
+        // AuthModule should be imported in AppModule separately
+        // AuthGuard is registered globally and AUTH_MODULE_OPTIONS_KEY is available via DI
+      ],
       controllers: [
         // Admin controllers are registered in their respective modules
         // This keeps controllers close to their domain logic
         // AdminModule only provides infrastructure
       ],
-      providers: [AdminGuard, AdminDiscoveryService],
-      exports: [AdminGuard, AdminDiscoveryService, TypeOrmModule],
+      providers: [AdminDiscoveryService],
+      exports: [AdminDiscoveryService, TypeOrmModule],
     };
   }
 
