@@ -1,4 +1,3 @@
-export * from './admin.guard';
 export * from './admin.middleware';
 export * from './admin.module';
 export * from './admin-controller.decorator';

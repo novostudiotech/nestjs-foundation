@@ -2,8 +2,6 @@ import { DynamicModule, Global, Module, OnModuleInit } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Logger } from 'nestjs-pino';
-// TODO: Re-enable AdminGuard once AUTH_MODULE_OPTIONS_KEY integration is fixed
-// import { AdminGuard } from './admin.guard';
 import { AdminDiscoveryService } from './admin-discovery.service';
 import { adminRegistry } from './admin-registry';
 
@@ -14,7 +12,7 @@ import { adminRegistry } from './admin-registry';
  * This module is @Global() which means:
  * - All providers (AdminDiscoveryService) are available throughout the app
  * - TypeORM repositories for admin entities are available throughout the app
- * - TODO: AdminGuard temporarily disabled - see admin.guard.ts
+ * - AuthGuard from Better Auth is applied by default to all admin controllers (authentication required)
  * - You can create admin controllers in any module without importing AdminModule
  * - Just use @AdminController(Entity) decorator and BaseAdminController
  *
@@ -41,9 +39,9 @@ export class AdminModule implements OnModuleInit {
    * Configure AdminModule with entities from adminRegistry
    * Must be called in AppModule AFTER all modules with @AdminController are imported
    *
-   * @param _authModule - Optional AuthModule instance (currently unused, kept for future AdminGuard integration)
+   * @param authModule - AuthModule instance to make AUTH_MODULE_OPTIONS_KEY available to AuthGuard
    */
-  static forRoot(_authModule?: DynamicModule): DynamicModule {
+  static forRoot(authModule?: DynamicModule): DynamicModule {
     // Get all entities registered by @AdminController decorator
     const entities = adminRegistry.getAll();
 
@@ -53,26 +51,16 @@ export class AdminModule implements OnModuleInit {
       imports: [
         DiscoveryModule,
         TypeOrmModule.forFeature(entities),
-        // TODO: Re-enable when AdminGuard is fixed
-        // Import AuthModule to make AUTH_MODULE_OPTIONS_KEY available to AdminGuard
-        // ...(authModule ? [authModule] : []),
+        // Import AuthModule to make AUTH_MODULE_OPTIONS_KEY available to AuthGuard
+        ...(authModule ? [authModule] : []),
       ],
       controllers: [
         // Admin controllers are registered in their respective modules
         // This keeps controllers close to their domain logic
         // AdminModule only provides infrastructure
       ],
-      providers: [
-        // TODO: Re-enable AdminGuard once AUTH_MODULE_OPTIONS_KEY integration is fixed
-        // AdminGuard,
-        AdminDiscoveryService,
-      ],
-      exports: [
-        // TODO: Re-enable AdminGuard once AUTH_MODULE_OPTIONS_KEY integration is fixed
-        // AdminGuard,
-        AdminDiscoveryService,
-        TypeOrmModule,
-      ],
+      providers: [AdminDiscoveryService],
+      exports: [AdminDiscoveryService, TypeOrmModule],
     };
   }
 

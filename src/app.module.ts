@@ -114,9 +114,7 @@ const authModule = createAuthModule();
     }),
     NotificationsModule,
     authModule,
-    // TODO: Re-enable authModule parameter when AdminGuard is fixed
-    // Pass authModule to AdminModule.forRoot() to make AUTH_MODULE_OPTIONS_KEY available to AdminGuard
-    AdminModule.forRoot(), // Register all admin entities from adminRegistry
+    AdminModule.forRoot(authModule), // Register all admin entities from adminRegistry
     AuthControllersModule,
     /* remove_after_init_start */
     ProductsModule,
