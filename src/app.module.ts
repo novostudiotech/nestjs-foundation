@@ -18,7 +18,50 @@ import { AuthControllersModule } from '#/auth/auth.module';
 import { NotificationsModule, NotificationsService, NotificationType } from '#/notifications';
 /* remove_after_init_start */
 import { ProductsModule } from '#/products/products.module';
+
 /* remove_after_init_end */
+
+// Factory function to create AuthModule instance
+// This allows us to reuse the same module instance in both imports and AdminModule.forRoot()
+function createAuthModule() {
+  return AuthModule.forRootAsync({
+    imports: [NotificationsModule],
+    useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {
+      const databaseUrl = configService.get('DATABASE_URL');
+      const secret = configService.get('AUTH_SECRET');
+      const corsOriginsString = configService.get('CORS_ORIGINS') || '';
+      const appEnv = configService.get('APP_ENV');
+
+      // Map Better Auth OTP types to notification types
+      const otpTypeMap: Record<BetterAuthOtpType, NotificationType> = {
+        'sign-in': NotificationType.OTP_SIGN_IN,
+        'email-verification': NotificationType.OTP_EMAIL_VERIFICATION,
+        'forget-password': NotificationType.OTP_PASSWORD_RESET,
+      };
+
+      return {
+        auth: getBetterAuthConfig({
+          databaseUrl,
+          secret,
+          trustedOrigins: getTrustedOrigins(corsOriginsString),
+          isTest: appEnv === 'test',
+          isProd: appEnv === 'prod',
+          sendOtp: async ({ email, otp, type }) => {
+            const notificationType = otpTypeMap[type];
+            await notificationsService.send(notificationType, {
+              recipient: email,
+              otp,
+              expiresInMinutes: 5,
+            });
+          },
+        }),
+      };
+    },
+    inject: [ConfigService, NotificationsService],
+  });
+}
+
+const authModule = createAuthModule();
 
 @Module({
   imports: [
@@ -70,42 +113,9 @@ import { ProductsModule } from '#/products/products.module';
       inject: [ConfigService],
     }),
     NotificationsModule,
-    // AuthModule must be imported before AdminModule because AdminGuard depends on AUTH_MODULE_OPTIONS_KEY
-    AuthModule.forRootAsync({
-      imports: [NotificationsModule],
-      useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {
-        const databaseUrl = configService.get('DATABASE_URL');
-        const secret = configService.get('AUTH_SECRET');
-        const corsOriginsString = configService.get('CORS_ORIGINS') || '';
-        const appEnv = configService.get('APP_ENV');
-
-        // Map Better Auth OTP types to notification types
-        const otpTypeMap: Record<BetterAuthOtpType, NotificationType> = {
-          'sign-in': NotificationType.OTP_SIGN_IN,
-          'email-verification': NotificationType.OTP_EMAIL_VERIFICATION,
-          'forget-password': NotificationType.OTP_PASSWORD_RESET,
-        };
-
-        return {
-          auth: getBetterAuthConfig({
-            databaseUrl,
-            secret,
-            trustedOrigins: getTrustedOrigins(corsOriginsString),
-            isTest: appEnv === 'test',
-            isProd: appEnv === 'prod',
-            sendOtp: async ({ email, otp, type }) => {
-              const notificationType = otpTypeMap[type];
-              await notificationsService.send(notificationType, {
-                recipient: email,
-                otp,
-                expiresInMinutes: 5,
-              });
-            },
-          }),
-        };
-      },
-      inject: [ConfigService, NotificationsService],
-    }),
+    authModule,
+    // TODO: Re-enable authModule parameter when AdminGuard is fixed
+    // Pass authModule to AdminModule.forRoot() to make AUTH_MODULE_OPTIONS_KEY available to AdminGuard
     AdminModule.forRoot(), // Register all admin entities from adminRegistry
     AuthControllersModule,
     /* remove_after_init_start */

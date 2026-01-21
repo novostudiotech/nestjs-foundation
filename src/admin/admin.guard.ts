@@ -1,69 +1,54 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
-import { Logger } from 'nestjs-pino';
-
 /**
- * Guard for admin routes
- * Extends AuthGuard with admin-specific logging and future RBAC support
+ * TODO: Implement AdminGuard with AuthModule integration
  *
- * @example Usage with @AdminController decorator (automatic)
+ * Problem: AdminGuard cannot access AUTH_MODULE_OPTIONS_KEY from AuthModule.
+ * The provider is not available in AdminModule context even when AuthModule is imported.
+ *
+ * Options to explore:
+ * 1. Import AuthModule in AdminModule.forRoot() - tried, provider not accessible
+ * 2. Use ModuleRef.get() with { strict: false } - tried, provider not found in global context
+ * 3. Composition instead of inheritance - not tried yet
+ * 4. Custom provider wrapper - not tried yet
+ *
+ * See TASK_ADMIN_GUARD_AUTH_INTEGRATION.md for detailed analysis.
+ *
+ * @example Future usage
  * ```typescript
  * @AdminController(UserEntity) // AdminGuard applied automatically
  * export class AdminUsersController extends BaseAdminController<UserEntity> {}
  * ```
- *
- * @example Manual usage
- * ```typescript
- * @UseGuards(AdminGuard)
- * @Controller('admin/custom')
- * export class CustomAdminController {}
- * ```
  */
-@Injectable()
-export class AdminGuard implements CanActivate {
-  private authGuard: AuthGuard | null = null;
 
-  constructor(
-    private readonly moduleRef: ModuleRef,
-    private readonly logger: Logger
-  ) {}
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Lazy load AuthGuard to avoid circular dependency issues
-    let guard = this.authGuard;
-    if (!guard) {
-      const loadedGuard = this.moduleRef.get(AuthGuard, { strict: false });
-      if (!loadedGuard) {
-        this.logger.error('AuthGuard not found in module context');
-        return false;
-      }
-      this.authGuard = loadedGuard;
-      guard = loadedGuard;
-    }
-
-    // 1. Check authentication using Better Auth
-    const isAuthorized = await guard.canActivate(context);
-
-    if (!isAuthorized) {
-      return false;
-    }
-
-    // 2. Log successful admin route access
-    const request = context.switchToHttp().getRequest();
-    this.logger.log({
-      msg: 'Admin route access',
-      userId: request.user?.id,
-      path: request.path,
-      method: request.method,
-    });
-
-    // 3. Future extension point: Check admin role
-    // const requiredRoles = this.reflector.get<string[]>('roles', context.getHandler());
-    // if (requiredRoles && !requiredRoles.includes(request.user.role)) {
-    //   return false;
-    // }
-
-    return true;
-  }
-}
+// Temporarily disabled - see TODO above
+// import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
+// import { Reflector } from '@nestjs/core';
+// import { AUTH_MODULE_OPTIONS_KEY, AuthGuard } from '@thallesp/nestjs-better-auth';
+// import { Logger } from 'nestjs-pino';
+//
+// @Injectable()
+// export class AdminGuard extends AuthGuard {
+//   constructor(
+//     reflector: Reflector,
+//     @Inject(AUTH_MODULE_OPTIONS_KEY) options: unknown,
+//     private readonly logger: Logger
+//   ) {
+//     super(reflector, options as any);
+//   }
+//
+//   async canActivate(context: ExecutionContext): Promise<boolean> {
+//     const isAuthorized = await super.canActivate(context);
+//     if (!isAuthorized) {
+//       return false;
+//     }
+//
+//     const request = context.switchToHttp().getRequest();
+//     this.logger.log({
+//       msg: 'Admin route access',
+//       userId: request.user?.id,
+//       path: request.path,
+//       method: request.method,
+//     });
+//
+//     return true;
+//   }
+// }

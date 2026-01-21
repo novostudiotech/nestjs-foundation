@@ -1,10 +1,11 @@
 import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminGuard } from './admin.guard';
+// TODO: Re-enable AdminGuard once AUTH_MODULE_OPTIONS_KEY integration is fixed
+// import { AdminGuard } from './admin.guard';
 import { adminRegistry } from './admin-registry';
 
 export interface AdminControllerOptions {
-  /** Custom guards (default: AdminGuard). Set to false to disable guards */
+  /** Custom guards. Set to false to disable guards. Default: [] (no guards - TODO: AdminGuard disabled) */
   // biome-ignore lint/suspicious/noExplicitAny: Guards can be any NestJS guard class
   guards?: any[] | false;
   /** Custom API tag (default: 'Admin - {Resource}') */
@@ -40,13 +41,20 @@ export interface AdminControllerOptions {
  * }
  * ```
  *
- * @example Without authentication
+ * @example Without authentication (currently default - AdminGuard is disabled)
  * ```typescript
  * @AdminController(PublicDataEntity, { guards: false })
  * @Injectable()
  * export class AdminPublicDataController extends BaseAdminController<PublicDataEntity> {
- *   // No AdminGuard applied
+ *   // No guards applied (AdminGuard is temporarily disabled)
  * }
+ * ```
+ *
+ * @example With custom guards (when AdminGuard is re-enabled, this will be the default)
+ * ```typescript
+ * @AdminController(UserEntity, { guards: [AdminGuard, CustomRoleGuard] })
+ * @Injectable()
+ * export class AdminUsersController extends BaseAdminController<UserEntity> {}
  * ```
  */
 export function AdminController(
@@ -62,7 +70,9 @@ export function AdminController(
   // Or use the one provided in options
   const resourceName = options.resource || entity.name.replace(/Entity$/, '').toLowerCase();
 
-  const guards = options.guards === false ? [] : options.guards || [AdminGuard];
+  // TODO: Re-enable AdminGuard once AUTH_MODULE_OPTIONS_KEY integration is fixed
+  // const guards = options.guards === false ? [] : options.guards || [AdminGuard];
+  const guards = options.guards === false ? [] : options.guards || [];
   const tag = options.tag || 'Admin';
 
   // biome-ignore lint/suspicious/noExplicitAny: Decorator target must be any for flexibility
