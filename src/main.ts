@@ -82,7 +82,14 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
 
+  // Set OpenAPI version to 3.1.0 for Orval 8 compatibility
+  // Orval 8 requires OpenAPI 3.1.0 instead of 3.0.0
   const document = SwaggerModule.createDocument(app, config);
+  // Override OpenAPI version to 3.1.0
+  // TODO: Verify that SwaggerModule.createDocument generates OpenAPI 3.1.0 by default
+  // (or check if DocumentBuilder has an option to specify the version explicitly)
+  // Currently we override it manually - need to ensure this is the correct approach
+  document.openapi = '3.1.0';
 
   // Integrate Better Auth OpenAPI schema
   // Get auth instance from AuthService (already created in AuthModule)

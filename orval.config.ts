@@ -23,11 +23,8 @@ export default defineConfig({
     },
     input: {
       target: `http://localhost:${PORT}/docs-json`,
-      parserOptions: {
-        // Orval uses swagger2openapi internally which validates against OpenAPI 3.0
-        // We need to disable validation to support OpenAPI 3.1 features like exclusiveMinimum as number
-        validate: false,
-      },
+      // Orval 8 requires OpenAPI 3.1.0
+      // The OpenAPI version is set to 3.1.0 in main.ts
     },
   },
 });
