@@ -39,7 +39,7 @@
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/typeorm": "^11.0.0",
     "@react-email/components": "^1.0.5",
-    "@sentry/node": "^10.35.0",
+    "@sentry/node": "^10.38.0",
     "@thallesp/nestjs-better-auth": "^2.2.2",
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "better-auth": "^1.4.10",
