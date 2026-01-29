@@ -47,8 +47,8 @@ importers:
         specifier: ^10.35.0
         version: 10.35.0
       '@thallesp/nestjs-better-auth':
-        specifier: ^2.2.2
-        version: 2.2.2(patch_hash=8dc7aa923f48055057fca7e4cf318c91deac742e5dcee3558241afe020a47c47)(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(@nestjs/graphql@13.2.3(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(graphql@16.12.0)(reflect-metadata@0.2.2))(@nestjs/websockets@11.1.11)(better-auth@1.4.10(patch_hash=8895d07beeee4b48f29085226a2010c84dc44f0eeddccde6e3890c441e0c07d1)(next@16.0.10(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(express@5.2.1)(graphql@16.12.0)(typescript@5.9.3)
+        specifier: ^2.2.4
+        version: 2.2.4(patch_hash=8dc7aa923f48055057fca7e4cf318c91deac742e5dcee3558241afe020a47c47)(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(@nestjs/graphql@13.2.3(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(graphql@16.12.0)(reflect-metadata@0.2.2))(@nestjs/websockets@11.1.11)(better-auth@1.4.10(patch_hash=8895d07beeee4b48f29085226a2010c84dc44f0eeddccde6e3890c441e0c07d1)(next@16.0.10(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(express@5.2.1)(graphql@16.12.0)(typescript@5.9.3)
       '@willsoto/nestjs-prometheus':
         specifier: ^6.0.2
         version: 6.0.2(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(prom-client@15.1.3)
@@ -2117,8 +2117,8 @@ packages:
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
-  '@thallesp/nestjs-better-auth@2.2.2':
-    resolution: {integrity: sha512-iQlp2ZqPRXhmzq19hvRszSEjiJwhzNIRzVAmm8M+MHyms7RFeXOdPGUMqEU4N+5quMfRHHaJtV8Au1ZQcdvcpg==}
+  '@thallesp/nestjs-better-auth@2.2.4':
+    resolution: {integrity: sha512-RfuZgBqQzMO/abc02e6fjFFsA3lvkmvSKz/P9jayZZmxqZTmL2RVWwHMaF6SSVWGFZCEaKO5PuGQ9u8MJrIquA==}
     peerDependencies:
       '@nestjs/common': ^11.1.6
       '@nestjs/core': ^11.1.6
@@ -2129,7 +2129,11 @@ packages:
       graphql: ^16.11.0
       typescript: ^5.9.2
     peerDependenciesMeta:
+      '@nestjs/graphql':
+        optional: true
       '@nestjs/websockets':
+        optional: true
+      graphql:
         optional: true
 
   '@tokenizer/inflate@0.4.1':
@@ -6187,6 +6191,7 @@ snapshots:
       '@graphql-tools/utils': 10.11.0(graphql@16.12.0)
       graphql: 16.12.0
       tslib: 2.8.1
+    optional: true
 
   '@graphql-tools/schema@10.0.30(graphql@16.12.0)':
     dependencies:
@@ -6194,6 +6199,7 @@ snapshots:
       '@graphql-tools/utils': 10.11.0(graphql@16.12.0)
       graphql: 16.12.0
       tslib: 2.8.1
+    optional: true
 
   '@graphql-tools/utils@10.11.0(graphql@16.12.0)':
     dependencies:
@@ -6202,10 +6208,12 @@ snapshots:
       cross-inspect: 1.0.1
       graphql: 16.12.0
       tslib: 2.8.1
+    optional: true
 
   '@graphql-typed-document-node/core@3.2.0(graphql@16.12.0)':
     dependencies:
       graphql: 16.12.0
+    optional: true
 
   '@img/colour@1.0.0':
     optional: true
@@ -6774,6 +6782,7 @@ snapshots:
       - crossws
       - uWebSockets.js
       - utf-8-validate
+    optional: true
 
   '@nestjs/mapped-types@2.1.0(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)':
     dependencies:
@@ -7543,17 +7552,17 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@thallesp/nestjs-better-auth@2.2.2(patch_hash=8dc7aa923f48055057fca7e4cf318c91deac742e5dcee3558241afe020a47c47)(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(@nestjs/graphql@13.2.3(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(graphql@16.12.0)(reflect-metadata@0.2.2))(@nestjs/websockets@11.1.11)(better-auth@1.4.10(patch_hash=8895d07beeee4b48f29085226a2010c84dc44f0eeddccde6e3890c441e0c07d1)(next@16.0.10(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(express@5.2.1)(graphql@16.12.0)(typescript@5.9.3)':
+  '@thallesp/nestjs-better-auth@2.2.4(patch_hash=8dc7aa923f48055057fca7e4cf318c91deac742e5dcee3558241afe020a47c47)(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(@nestjs/graphql@13.2.3(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(graphql@16.12.0)(reflect-metadata@0.2.2))(@nestjs/websockets@11.1.11)(better-auth@1.4.10(patch_hash=8895d07beeee4b48f29085226a2010c84dc44f0eeddccde6e3890c441e0c07d1)(next@16.0.10(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(express@5.2.1)(graphql@16.12.0)(typescript@5.9.3)':
     dependencies:
       '@nestjs/common': 11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.12(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.12)(@nestjs/websockets@11.1.11)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/graphql': 13.2.3(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(graphql@16.12.0)(reflect-metadata@0.2.2)
       better-auth: 1.4.10(patch_hash=8895d07beeee4b48f29085226a2010c84dc44f0eeddccde6e3890c441e0c07d1)(next@16.0.10(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       express: 5.2.1
-      graphql: 16.12.0
       typescript: 5.9.3
     optionalDependencies:
+      '@nestjs/graphql': 13.2.3(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(graphql@16.12.0)(reflect-metadata@0.2.2)
       '@nestjs/websockets': 11.1.11(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      graphql: 16.12.0
 
   '@tokenizer/inflate@0.4.1':
     dependencies:
@@ -7863,6 +7872,7 @@ snapshots:
   '@whatwg-node/promise-helpers@1.3.2':
     dependencies:
       tslib: 2.8.1
+    optional: true
 
   '@willsoto/nestjs-prometheus@6.0.2(@nestjs/common@11.1.12(reflect-metadata@0.2.2)(rxjs@7.8.2))(prom-client@15.1.3)':
     dependencies:
@@ -8071,7 +8081,8 @@ snapshots:
       babel-plugin-jest-hoist: 30.2.0
       babel-preset-current-node-syntax: 1.2.0(@babel/core@7.28.5)
 
-  backo2@1.0.2: {}
+  backo2@1.0.2:
+    optional: true
 
   balanced-match@1.0.2: {}
 
@@ -8427,6 +8438,7 @@ snapshots:
   cross-inspect@1.0.1:
     dependencies:
       tslib: 2.8.1
+    optional: true
 
   cross-spawn@7.0.6:
     dependencies:
@@ -8685,7 +8697,8 @@ snapshots:
 
   etag@1.8.1: {}
 
-  eventemitter3@3.1.2: {}
+  eventemitter3@3.1.2:
+    optional: true
 
   eventemitter3@5.0.1: {}
 
@@ -9007,14 +9020,17 @@ snapshots:
     dependencies:
       graphql: 16.12.0
       tslib: 2.8.1
+    optional: true
 
   graphql-ws@6.0.6(graphql@16.12.0)(ws@8.18.3):
     dependencies:
       graphql: 16.12.0
     optionalDependencies:
       ws: 8.18.3
+    optional: true
 
-  graphql@16.12.0: {}
+  graphql@16.12.0:
+    optional: true
 
   handlebars@4.7.8:
     dependencies:
@@ -9212,7 +9228,8 @@ snapshots:
       html-escaper: 2.0.2
       istanbul-lib-report: 3.0.1
 
-  iterall@1.3.0: {}
+  iterall@1.3.0:
+    optional: true
 
   iterare@1.2.1: {}
 
@@ -10708,6 +10725,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   supports-color@7.2.0:
     dependencies:
@@ -10726,7 +10744,8 @@ snapshots:
     dependencies:
       '@scarf/scarf': 1.4.0
 
-  symbol-observable@1.2.0: {}
+  symbol-observable@1.2.0:
+    optional: true
 
   symbol-observable@4.0.0: {}
 
@@ -11126,7 +11145,8 @@ snapshots:
       imurmurhash: 0.1.4
       signal-exit: 4.1.0
 
-  ws@7.5.10: {}
+  ws@7.5.10:
+    optional: true
 
   ws@8.18.3: {}
 
